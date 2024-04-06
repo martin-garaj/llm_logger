@@ -1,0 +1,23 @@
+/* ******************************** css_grid ******************************** */
+#grid-container {
+    display: grid;
+    grid-template-rows: 4em auto;  /* Define two rows: top-cell height and the remaining height */
+    grid-template-columns: 6em auto;  /* Define two columns: left-cell width and the remaining width */
+    height: 100%;  /* Make the grid container take up the full available height */
+}
+
+#top-cell {
+    grid-row: 1;  /* Place top-cell in the first row */
+    grid-column: 1 / span 2;  /* Span top-cell across both columns */
+}
+
+#left-cell {
+    grid-row: 2;  /* Place left-cell in the second row */
+    grid-column: 1;  /* Place left-cell in the first column */
+}
+
+#right-cell {
+    grid-row: 2;  /* Place right-cell in the second row */
+    grid-column: 2;  /* Place right-cell in the second column */
+}
+

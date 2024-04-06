@@ -1,0 +1,23 @@
+/* ******************************** dash/html ******************************* */
+html, body, #react-entry-point, #_dash-app-content {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* ****************************** app-container ***************************** */
+div.app-container {
+    height: 100%;
+    width: 100%;
+}
+
+/* *********************************** app ********************************** */
+div.app {
+    /* display of children */
+    height: 100%;
+    display: grid;
+    grid-template-rows: var(--header-height) calc(100% - var(--header-height) - var(--footer-height) ) var(--footer-height);
+    grid-template-columns: 100%;
+}
+

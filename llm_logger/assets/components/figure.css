@@ -1,0 +1,83 @@
+/* ****************************** main-content ****************************** */
+div.fig-content {
+    /* position within div.main-left */
+    width: 100%;
+    height: 100%;
+    /* display of children */
+    display: grid;
+    grid-template-rows: 4em calc(100% - 4em);
+    grid-template-columns: 4em calc(100% - 4em);
+}
+
+
+/* ******************************** fig-blank ******************************* */
+div.fig-blank {
+    /* position within div.main-content */
+    grid-row: 1;
+    grid-column: 1;
+}
+
+/* ******************************** fig-title ******************************* */
+div.fig-title {
+    /* position within div.main-content */
+    grid-row: 1;
+    grid-column: 2;
+}
+
+/* ******************************** fig-index ******************************* */
+div.fig-index {
+    /* position within div.main-content */
+    grid-row: 2;
+    grid-column: 1;
+    /* display of children */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; 
+    overflow-y: auto;
+}
+
+/* ******************************* fig-plotly ******************************* */
+div.fig-plotly {
+    /* position within div.main-content */
+    grid-row: 2;
+    grid-column: 2;
+}
+
+/* ******************************* fig-chapter ****************************** */
+div.fig-chapter {
+    width: 2em; 
+    height: 3em; 
+    box-sizing: border-box;
+    /* margin-bottom: 1em;  */
+    border-radius: 0.5em 0 0 0.5em;
+    border: 0.2em solid; 
+    /* display of children */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+    font-size: 1.5em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+div.fig-chapter-selected {
+    width: 2em; 
+    height: 3.6em; 
+    box-sizing: content-box;
+    /* margin-bottom: 1em;  */
+    border-radius: 0.5em 0 0 0.5em;
+    border-top: 0.3em solid; 
+    border-left: 0.3em solid; 
+    border-bottom: 0.3em solid; 
+    border-right: none; 
+    /* display of children */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+    font-size: 1.5em;
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+}

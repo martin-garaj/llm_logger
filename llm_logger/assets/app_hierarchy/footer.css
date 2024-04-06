@@ -1,0 +1,9 @@
+/* ********************************* footer ********************************* */
+div.footer {
+    /* position within div.app */
+    grid-row: 3;
+    /* display of children */
+    display: flex;
+    justify-content: space-between;
+    padding: 0.2em;
+}
