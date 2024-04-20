@@ -1,0 +1,24 @@
+
+
+/* ********************************* display ******************************** */
+div.display-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+div.display {
+    /* max-width: 40em; */
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 0.5em 0.5em 0.5em 0.5em;
+    border: 0.1em solid; 
+    margin-top: 1em;
+    margin-right: 2em;
+    margin-bottom: 1em;
+    margin-left: 2em;
+}

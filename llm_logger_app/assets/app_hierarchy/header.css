@@ -1,0 +1,9 @@
+/* ********************************* header ********************************* */
+div.header {
+    /* position within div.app */
+    grid-row: 1;
+    /* display of children */
+    display: flex;
+    justify-content: space-between;
+    padding: 0.2em;
+}

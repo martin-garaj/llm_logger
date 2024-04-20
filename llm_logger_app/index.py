@@ -32,10 +32,10 @@ app = Dash(
 from dash import html
 
 try:
-    from llm_logger.components.header import header
-    from llm_logger.components.options import options
-    from llm_logger.components.footer import footer
-    from llm_logger.components.main import main
+    from llm_logger_app.components.header import header
+    from llm_logger_app.components.options import options
+    from llm_logger_app.components.footer import footer
+    from llm_logger_app.components.main import main
 except ImportError:
     from components.header import header
     from components.options import options
@@ -60,8 +60,8 @@ app.layout = html.Div(
 ##                                  callbacks                                 ##
 ################################################################################
 try:
-    from llm_logger.callbacks.options_open import register_options_open
-    from llm_logger.callbacks.theme_change import register_theme_change
+    from llm_logger_app.callbacks.options_open import register_options_open
+    from llm_logger_app.callbacks.theme_change import register_theme_change
 except ImportError:
     from callbacks.options_open import register_options_open
     from callbacks.theme_change import register_theme_change

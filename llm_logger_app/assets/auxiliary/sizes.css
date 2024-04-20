@@ -1,0 +1,33 @@
+/* ********************************* height ********************************* */
+div.height_100 {
+    height: 100%;
+}
+
+div.height_S {
+    height: 2em;
+}
+
+div.height_M {
+    height: 4em;
+}
+
+div.height_L {
+    height: 8em;
+}
+
+/* ********************************** width ********************************* */
+div.width_100 {
+    width: 100%;
+}
+
+div.width_S {
+    width: 2em;
+}
+
+div.width_M {
+    width: 4em;
+}
+
+div.width_L {
+    width: 8em;
+}
