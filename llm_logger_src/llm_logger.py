@@ -71,7 +71,8 @@ class llm_logger:
             stack:bool=False,
             content:Any=None, 
             relates_to_node_id:NodeID=None, 
-            relation_content:Any=None) -> NodeID:
+            relation_content:Any=None,
+            relation_style:str="default") -> NodeID:
         """ Create a node in the log-graph, returns the nodes ID. 
             The node may be connected to previously logged node using 
             'relate_to' given the previous node ID (self-loops thus do not exists). 
@@ -106,8 +107,8 @@ class llm_logger:
             metadata=dict(
                 time=dt.datetime.now(self.__time_format).isoformat(),
                 type=_NODE,
-                column = column,
-                style = style,
+                column = column.strip('_'),
+                style = style.strip('_'),
                 stack = stack,
                 chapter_id = ChapterID(self.chapter_counter),
                 ),
@@ -121,6 +122,9 @@ class llm_logger:
                 data=dict(
                     content=relation_content,
                     ),
+                metadata=dict(
+                    style=relation_style.strip('_'),
+                    ),
                 )
         
         return node_id
@@ -129,7 +133,10 @@ class llm_logger:
     ##------------------------------------------------------------------------##
     ##                               new_chapter                              ##
     ##------------------------------------------------------------------------##
-    def new_chapter(self, title:str, content:Any=None) -> None:
+    def new_chapter(self, 
+                    title:str,
+                    style:str="default", 
+                    content:Any=None) -> None:
         """ Create new chapter, thus partitioning the log-graph in 
             vertical manner.
 
@@ -150,6 +157,7 @@ class llm_logger:
             metadata=dict(
                 time=dt.datetime.now(self.__time_format).isoformat(),
                 type=_CHAPTER,
+                style = style.strip('_'),
                 ),
             )
     

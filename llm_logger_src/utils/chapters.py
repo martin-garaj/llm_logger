@@ -7,9 +7,7 @@ try:
     from .ids import NodeID, ChapterID, _NODE, _CHAPTER
 except ImportError:
     from llm_logger_src.utils.ids import NodeID, ChapterID, _NODE, _CHAPTER
-    
-    
-    
+
 
 def get_chapter_ids_with_node_ids(graph:nx.DiGraph) -> Dict[ChapterID, NodeID]:
     """ Collapses the graph into chapters. Every chapter contains 

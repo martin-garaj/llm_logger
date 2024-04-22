@@ -1,5 +1,5 @@
 ################################################################################
-##                                DEFAULT STYLE                               ##
+##                                LAYOUT STYLE                                ##
 ################################################################################
 LAYOUT_DEFAULT_STYLE = dict(
             plot_bgcolor='honeydew',
@@ -12,6 +12,9 @@ LAYOUT_DEFAULT_STYLE = dict(
         )
 
 
+################################################################################
+##                                 XAXES STYLE                                ##
+################################################################################
 XAXES_DEFAULT_STYLE = dict(
     mirror=False,
     nticks=0,
@@ -20,6 +23,10 @@ XAXES_DEFAULT_STYLE = dict(
     zeroline=False,
 )
 
+
+################################################################################
+##                                 YAXES STYLE                                ##
+################################################################################
 YAXES_DEFAULT_STYLE = dict(
     mirror=False,
     nticks=0,
@@ -30,6 +37,9 @@ YAXES_DEFAULT_STYLE = dict(
 )
 
 
+################################################################################
+##                                  NODE STYLE                                ##
+################################################################################
 NODE_DEFAULT_STYLES = dict(
     default = dict(
             fillpattern = dict(
@@ -60,64 +70,23 @@ NODE_DEFAULT_STYLES = dict(
         ),
 )
 
+################################################################################
+##                                CHAPTER STYLE                               ##
+################################################################################
 CHAPTER_DEFAULT_STYLES = dict(
     default = dict(
             fillcolor='darkorange',
             line = dict(width=3.0, color='darkslategray'),
             mode="lines",
         ),
-
-    extra = dict(
-            fillcolor='gold',
+    __start__ = dict(
+            fillcolor='red',
             line = dict(width=3.0, color='darkslategray'),
             mode="lines",
         ),
-)
-
-################################################################################
-##                                 DEFAULT 1                                  ##
-################################################################################
-PLOT_STYLE_1 = dict(
-    background = {
-            "background-color":"darkgray",
-        },
-    column = {
-            "background-color":"darkgray",
-        },
-)
-
-NODE_STYLE_1 = dict(
-    default = {
-            "background-color":"gainsboro",
-            "border-color":"black",
-            "border-width":2,
-        },
-    decision = {
-            "background-color":"darkturquoise",
-            "border-color":"black",
-            "border-width":2,
-        },
-    success = {
-            "background-color":"limegreen",
-            "border-color":"black",
-            "border-width":2,
-        },
-    failure = {
-            "background-color":"hotpink",
-            "border-color":"black",
-            "border-width":2,
-        }
-)
-
-CHAPTER_STYLE_1 = dict(
-    default = {
-            "background-color":"chocolate",
-            "border-color":"black",
-            "border-width":2,
-        },
-    extra = {
-            "background-color":"goldenrod",
-            "border-color":"black",
-            "border-width":2,
-        },
+    __end__ = dict(
+            fillcolor='green',
+            line = dict(width=3.0, color='darkslategray'),
+            mode="lines",
+        ),
 )

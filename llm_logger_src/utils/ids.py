@@ -1,11 +1,19 @@
-from typing import Union
+from typing import Union, Tuple
 
 ################################################################################
-##                                  CONSTANTS                                 ##
+##                              CONSTANTS - PUBLIC                            ##
 ################################################################################
-_ID_LENGTH = 6
+
 _NODE = "NODE_"
 _CHAPTER = "CHAP_"
+_EDGE = "EDGE_"
+
+################################################################################
+##                              CONSTANTS - PRIVATE                           ##
+################################################################################
+_ID_LENGTH = 6
+_UNDIRECTED_EDGE = "<->"
+_DIRECTED_EDGE = "-->"
 
 ################################################################################
 ##                                   NodeID                                   ##
@@ -34,6 +42,35 @@ class ChapterID(str):
         else:
             id = _CHAPTER + str(counter).zfill(_ID_LENGTH)
         return super(ChapterID, cls).__new__(cls, id)
+
+
+################################################################################
+##                                    EdgeID                                  ##
+################################################################################
+class EdgeID(str):
+    def __new__(cls, vertex_id_0:Union[NodeID, ChapterID], vertex_id_1:Union[NodeID, ChapterID], directed:bool=False):
+
+        if not (valid_node_id(vertex_id_0) or valid_chapter_id(vertex_id_0)):
+            raise ValueError(
+                f"vertex_id_0='{vertex_id_0}' was evaluated as invalid.")
+        if not (valid_node_id(vertex_id_1) or valid_chapter_id(vertex_id_1)):
+            raise ValueError(
+                f"vertex_id_1='{vertex_id_1}' was evaluated as invalid.")
+        if vertex_id_0 == vertex_id_1:
+            raise RuntimeError(
+                f"'{vertex_id_0}'=='{vertex_id_1}', "\
+                f"self-loops are not allowed!")
+        
+        vertex_ids = [vertex_id_0, vertex_id_1]
+        vertex_ids.sort()
+        
+        # undirected edge
+        if directed:
+            id = f"{vertex_ids[0]}{_DIRECTED_EDGE}{vertex_ids[1]}"
+        else:
+            id = f"{vertex_ids[0]}{_UNDIRECTED_EDGE}{vertex_ids[1]}"
+        
+        return super(EdgeID, cls).__new__(cls, id)
 
 
 ################################################################################
@@ -79,6 +116,52 @@ def valid_chapter_id(id:Union[ChapterID, str]) -> bool:
 
 
 ################################################################################
+##                                valid_edge_id                               ##
+################################################################################
+def valid_edge_id(id:EdgeID) -> bool:
+    try:
+        _, _ = edge_id_to_vertex_ids(id)
+        return True
+    except _:
+        return False
+    return False
+
+
+################################################################################
+##                            edge_id_to_vertex_ids                           ##
+################################################################################
+def edge_id_to_vertex_ids(id:Union[EdgeID, str]) \
+    -> Tuple[Union[NodeID, ChapterID], Union[NodeID, ChapterID]]:
+    if _UNDIRECTED_EDGE in id:
+        vertex_ids = id.split(_UNDIRECTED_EDGE)
+    elif _DIRECTED_EDGE in id:
+        vertex_ids = id.split(_DIRECTED_EDGE)
+    else:
+        raise ValueError(f"id='{id}' is of unknown direction")
+        
+    if not (valid_node_id(vertex_ids[0]) or valid_chapter_id(vertex_ids[0])):
+        raise ValueError(
+            f"vertex_ids[0]='{vertex_ids[0]}' was evaluated as invalid.")
+    if not (valid_node_id(vertex_ids[1]) or valid_chapter_id(vertex_ids[1])):
+        raise ValueError(
+            f"vertex_ids[1]='{vertex_ids[1]}' was evaluated as invalid.")
+
+    return vertex_ids[0], vertex_ids[1]
+
+
+def directed_edge(id:Union[EdgeID, str]) -> bool:
+    if valid_edge_id(edge_id=id):
+        if _UNDIRECTED_EDGE in id:
+            return False
+        elif _DIRECTED_EDGE in id:
+            return True
+        else:
+            raise ValueError(f"id='{id}' is of unknown direction")
+    else:
+        raise ValueError(
+            f"id='{id}' is invalid!")
+
+################################################################################
 ##                                    TESTS                                   ##
 ################################################################################
 if __name__ == "__main__":
@@ -113,7 +196,7 @@ if __name__ == "__main__":
 #     :param counter: Unique counter value.
 #     :return: String representing node id.
 #     """
-#     return __NODE_ID + str(counter).zfill(__ID_LENGTH)
+#     return __NODE_ID + str(counter).zfill(_ID_LENGTH)
 
 
 # ################################################################################
@@ -125,7 +208,7 @@ if __name__ == "__main__":
 #     :param counter: Unique counter value.
 #     :return: String representing chapter id.
 #     """
-#     return __CHAP_ID + str(counter).zfill(__ID_LENGTH)
+#     return __CHAP_ID + str(counter).zfill(_ID_LENGTH)
 
 
 # ################################################################################
@@ -151,9 +234,9 @@ if __name__ == "__main__":
 #         return False
 #     if type == "node":
 #         return id[0:len(__NODE_ID)] == __NODE_ID \
-#                         and len(id) == (len(__NODE_ID)+__ID_LENGTH)
+#                         and len(id) == (len(__NODE_ID)+_ID_LENGTH)
 #     if type == "chapter":
 #         return id[0:len(__CHAP_ID)] == __CHAP_ID \
-#                         and len(id) == (len(__CHAP_ID)+__ID_LENGTH)
+#                         and len(id) == (len(__CHAP_ID)+_ID_LENGTH)
 #     return False
     
