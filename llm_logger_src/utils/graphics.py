@@ -68,7 +68,7 @@ def _get_edge_trace(x_start:float, y_start:float, x_end:float, y_end:float,
                     (x_end  , (y_start+y_end)/2),
                     (x_end  , y_end)]
     elif geometry == "skew_30deg":
-        skew_length = np.abs(x_start-x_end) / np.cos(np.pi/6)
+        skew_length = np.abs(x_start-x_end) / np.cos(np.pi/12)
         # prevent zig-zag shape in case the y_start is after the y_end 
         # (not before as one could expect)
         if y_start < y_end:
@@ -93,7 +93,7 @@ def _get_edge_trace(x_start:float, y_start:float, x_end:float, y_end:float,
             cap_style="round", #"flat", 
             join_style="mitre",
         )
-            
+    
     # get trace
     x, y = list(zip(*buffered_line.exterior.coords))
     trace = go.Scatter(
@@ -120,8 +120,8 @@ def _get_chapter_trace(x:float, y:float, width:float, height:float,
     right = x + (width/2)
     skew_length = (height/2)
 
-    x = [  left,   left-skew_length, right-skew_length,  right, 
-         right-skew_length, left-skew_length,   left]
+    x = [  left,   left+skew_length, right-skew_length,  right, 
+         right-skew_length, left+skew_length,   left]
     y = [middle,                top,               top, middle,            
                     bottom,           bottom, middle]
     

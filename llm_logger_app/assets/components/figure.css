@@ -5,8 +5,8 @@ div.fig-content {
     height: 100%;
     /* display of children */
     display: grid;
-    grid-template-rows: 4em calc(100% - 4em);
-    grid-template-columns: 4em calc(100% - 4em);
+    grid-template-rows: var(--fig-index-width) calc(100% - var(--header-height) - var(--footer-height));
+    grid-template-columns: var(--fig-index-width) calc(100% - var(--header-height) - var(--footer-height));
 }
 
 
@@ -31,10 +31,11 @@ div.fig-index {
     grid-column: 1;
     /* display of children */
     box-sizing: border-box;
-    display: flex;
+    display: flex; 
     flex-direction: column;
     align-items: flex-end; 
     overflow-y: auto;
+    height: 100%, 
 }
 
 /* ******************************* fig-plotly ******************************* */
@@ -42,7 +43,20 @@ div.fig-plotly {
     /* position within div.main-content */
     grid-row: 2;
     grid-column: 2;
+    overflow-y: scroll;
+    /* overflow-x: hidden; */
+    height: 100%;
+    
 }
+
+/* ******************************* fig-graph ******************************** */
+ /* added to correct small height of the  UI */
+.fig-graph {
+    height: calc(100vh - var(--header-height) - var(--footer-height) - var(--fig-title-height));
+    /* width: 100%;
+    display: inline-block; */
+}
+
 
 /* ******************************* fig-chapter ****************************** */
 div.fig-chapter {
@@ -53,7 +67,7 @@ div.fig-chapter {
     border-radius: 0.5em 0 0 0.5em;
     border: 0.2em solid; 
     /* display of children */
-    display: flex;
+    display: flex; 
     justify-content: center;
     align-items: center;
     font-family: monospace;
@@ -81,7 +95,7 @@ div.fig-chapter-selected {
     border-bottom: 0.3em solid; 
     border-right: none; 
     /* display of children */
-    display: flex;
+    display: flex; 
     justify-content: center;
     align-items: center;
     font-family: monospace;

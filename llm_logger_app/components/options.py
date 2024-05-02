@@ -13,7 +13,7 @@ def options(initial_theme:str, available_themes:Dict[str, str]) -> html.Div:
                                 className="button-generic",
                                 children=["CLOSE"],
                                 n_clicks=0),
-                        html.Div(id="flex", className="flex_1"),
+                        html.Div(className="flex_1"),
                     ]),
             html.Div(id="options-content", 
                     className="options-content",

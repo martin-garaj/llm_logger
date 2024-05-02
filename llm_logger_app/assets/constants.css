@@ -2,7 +2,6 @@
     /* dimensions */
     --header-height: 2em;
     --footer-height: 2em;
-
-    /* background colors */
-
+    --fig-title-height: 4em;
+    --fig-index-width: 4em;
 }

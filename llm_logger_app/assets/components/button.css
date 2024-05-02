@@ -45,7 +45,7 @@ div.button-theme {
     align-items: center;
     
     /* sizing*/
-    height: 2em;
+    height: var(--header-height);
     width: 8em;
 
     /* interaction */

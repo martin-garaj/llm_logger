@@ -27,7 +27,7 @@ except ImportError:
 ################################################################################
 ##                                 llm_logger                                 ##
 ################################################################################
-class llm_logger:
+class LLMLogger:
     
     
     def __init__(self,
@@ -178,33 +178,107 @@ class llm_logger:
     ############################################################################
     ##                                PRIVATE                                 ##
     ############################################################################
-    # def _start_chapter(self):
-    #     # this happens single time
-    #     if self.__start_chapter_included:
-    #         raise RuntimeError(f"start_chapter is already included!")
+    def _test(self):
+        self.new_chapter(title = "A")
         
-    #     chapter_id = ChapterID(self.chapter_counter)
+        first_node_id = self.log(
+            column="other", 
+            style="default", 
+            stack=True,
+            content="This is content.", 
+            relates_to_node_id=None, 
+            relation_content=None,
+        )
         
-    #     # add node
-    #     self.graph.add_node(
-    #         node_for_adding = chapter_id,
-    #         data=dict(
-    #             title="START",
-    #             content=""),
-    #         metadata=dict(
-    #             time=dt.datetime.now(self.__time_format).isoformat(),
-    #             type=_CHAPTER,
-    #             ),
-    #         )
-    #     self.__start_chapter_included = True
+        last_node_id = self.log(
+            column="other", 
+            style="default", 
+            stack=True,
+            content="This is content.", 
+            relates_to_node_id=None, 
+            relation_content=None,
+        )
         
+        last_node_id = self.log(
+            column="other", 
+            style="default", 
+            stack=True,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=None,
+        )
+        self.new_chapter(title = "B")
+        last_node_id = self.log(
+            column="C", 
+            style="default", 
+            stack=True,
+            content="This is content.", 
+            relates_to_node_id=None, 
+            relation_content=None,
+        )    
+        
+        last_node_id = self.log(
+            column="A", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+        self.new_chapter(title = "C")
+        last_node_id = self.log(
+            column="B", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=first_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+        
+        last_node_id = self.log(
+            column="A", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+        
+        last_node_id = self.log(
+            column="A", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+        
+        last_node_id = self.log(
+            column="A", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+        
+        last_node_id = self.log(
+            column="C", 
+            style="default", 
+            stack=False,
+            content="This is content.", 
+            relates_to_node_id=last_node_id, 
+            relation_content=f"Relation to '{last_node_id}'",
+        )
+
+        return self.graph
         
 ################################################################################
 ##                                    TESTS                                   ##
 ################################################################################
 if __name__ == "__main__":
     
-    logger = llm_logger(
+    logger = LLMLogger(
         path=pl.Path('./'),
         file='test_log.json',
     )

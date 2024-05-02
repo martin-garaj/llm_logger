@@ -1,4 +1,6 @@
 from dash import html, dcc
+from plotly import graph_objects as go
+
 
 def figure() -> html.Div:
     chapters = list()
@@ -23,7 +25,11 @@ def figure() -> html.Div:
                              children=chapters),
                     html.Div(id="fig-plotly", 
                              className="fig-plotly", 
-                             children=[dcc.Graph(id="plotly-figure", className="fig-plotly")]),
+                             children=[dcc.Graph(
+                                id="fig-graph", 
+                                className="fig-graph", 
+                                figure=go.Figure(data=[go.Scatter(x=[0.0, 1.0], y=[0.0, 1.0])]),
+                            )]),
                         ],
                 )
     

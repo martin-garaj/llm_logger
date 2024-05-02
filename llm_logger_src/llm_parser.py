@@ -2,35 +2,35 @@
 
 Expected graph structure:
 
-graph
-    ├── node_for_adding : str/NodeID
-    ├── nodes
-    │   └── data
-    │   │   └── content
-    │   └── metadata
-    |       └── time : datetime
-    |       └── type : str
-    |       └── column : str
-    |       └── category : str
-    |       └── stack : bool
-    |       └── chapter_id : str/ChapterID
-    └── edges
-        └── u_of_edge : str/NodeID
-        └── v_of_edge : str/NodeID
-        └── data
-            └── content
-
-:raises ValueError: _description_
-:raises ValueError: _description_
-:return: _description_
+    graph
+        ├── node_for_adding : str/NodeID
+        ├── nodes
+        │   └── data
+        │   │   └── content : Any
+        │   └── metadata
+        |       └── time : datetime
+        |       └── type : str
+        |       └── column : str
+        |       └── category : str
+        |       └── stack : bool
+        |       └── chapter_id : str/ChapterID
+        └── edges
+            └── u_of_edge : str/NodeID
+            └── v_of_edge : str/NodeID
+            └── data
+                └── content
 """
 
-import networkx as nx
-import pandas as pd
-from plotly import graph_objects as go
-from typing import Tuple, Dict, Any, Union, List
+
+################################################################################
+##                                  CONSTANTS                                 ##
+################################################################################
+_EXTRA_COLUMN = "__extra__"
 
 
+################################################################################
+##                                   IMPORTS                                  ##
+################################################################################
 if __name__ == "__main__":
     import sys
     import os
@@ -44,33 +44,40 @@ if __name__ == "__main__":
     print(f"TESTING: add '{project_root_in_sys}' to PYTHONPATH")
 
 
+import networkx as nx
+import pandas as pd
+from plotly import graph_objects as go
+from typing import Tuple, Dict, Any, Union, List
+import copy
+
 try:
     from utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
         _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
     from utils.chapters import get_chapter_ids_with_node_ids
-    from assets.styles import LAYOUT_DEFAULT_STYLE, \
-        XAXES_DEFAULT_STYLE, YAXES_DEFAULT_STYLE, NODE_DEFAULT_STYLES, \
-        CHAPTER_DEFAULT_STYLES
+    from assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
+        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
     from assets.sizing import DEFAULT_SIZING
     from utils.graphics import _get_node_trace, \
         _get_chapter_trace, _get_edge_trace
+    from utils.graph import get_columns, get_chapter_ids, \
+        get_node_data, get_vertex_data, get_edge_data
 except ImportError:
     from llm_logger_src.utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
         _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
     from llm_logger_src.utils.chapters import get_chapter_ids_with_node_ids
-    from llm_logger_src.assets.styles import LAYOUT_DEFAULT_STYLE, \
-        XAXES_DEFAULT_STYLE, YAXES_DEFAULT_STYLE, NODE_DEFAULT_STYLES, \
-        CHAPTER_DEFAULT_STYLES
+    from llm_logger_src.assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
+        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
     from llm_logger_src.assets.sizing import DEFAULT_SIZING
     from llm_logger_src.utils.graphics import _get_node_trace, \
         _get_chapter_trace, _get_edge_trace
-    
-_EXTRA_COLUMN = "__extra__"
+    from llm_logger_src.utils.graph import get_columns, get_chapter_ids, \
+        get_node_data, get_vertex_data, get_edge_data
+
 
 ################################################################################
 ##                                 llm_parser                                 ##
 ################################################################################
-class llm_parser:
+class LLMLogParser:
     """ LLM_PARSER
         Should keep internal track of traces in the figure, then it is a 
         matter of indexing to change style of a trace. 
@@ -81,15 +88,38 @@ class llm_parser:
             stack - bool
             style - str (name of the style)
     
+    Internal variables (can be checked via parser.report())
+    
+    Expected graph structure:
+
+        graph
+            ├── node_for_adding : str/NodeID
+            ├── nodes
+            │   └── data
+            │   │   └── content : Any
+            │   └── metadata
+            |       └── time : datetime
+            |       └── type : str
+            |       └── column : str
+            |       └── category : str
+            |       └── stack : bool
+            |       └── chapter_id : str/ChapterID
+            └── edges
+                └── u_of_edge : str/NodeID
+                └── v_of_edge : str/NodeID
+                └── data
+                    └── content    
     """
     
     def __init__(self, 
                 graph:nx.Graph,
-                layout_style:Dict[str, Dict[str, Any]] = None,
-                xaxes_style:Dict[str, Dict[str, Any]] = None,
-                yaxes_style:Dict[str, Dict[str, Any]] = None,
+                layout_styles:Dict[str, Dict[str, Any]] = None,
+                column_styles:Dict[str, Dict[str, Any]] = None,
+                xaxes_styles:Dict[str, Dict[str, Any]] = None,
+                yaxes_styles:Dict[str, Dict[str, Any]] = None,
                 node_styles:Dict[str, Dict[str, Any]] = None,
                 chapter_styles:Dict[str, Dict[str, Any]] = None,
+                edge_styles:Dict[str, Dict[str, Any]] = None,
                 **kwargs,
             ):
         # internal variable
@@ -98,54 +128,66 @@ class llm_parser:
         self._add_start_end_chapter(start_title="START", end_title="END")
         
         # default/custom style
-        self.layout_style = LAYOUT_DEFAULT_STYLE if isinstance(layout_style, type(None)) else layout_style
-        self.xaxes_style = XAXES_DEFAULT_STYLE if isinstance(xaxes_style, type(None)) else xaxes_style
-        self.yaxes_style = YAXES_DEFAULT_STYLE if isinstance(yaxes_style, type(None)) else yaxes_style
-        self.node_styles = NODE_DEFAULT_STYLES if isinstance(node_styles, type(None)) else node_styles
-        self.chapter_styles = CHAPTER_DEFAULT_STYLES if isinstance(chapter_styles, type(None)) else chapter_styles
-
+        self.layout_styles  = LAYOUT_STYLES \
+            if isinstance(layout_styles, type(None)) else layout_styles
+        self.column_styles  = COLUMN_STYLES \
+            if isinstance(column_styles, type(None)) else column_styles
+        self.xaxes_style    = XAXES_STYLES \
+            if isinstance(xaxes_styles, type(None)) else xaxes_styles
+        self.yaxes_style    = YAXES_STYLES \
+            if isinstance(yaxes_styles, type(None)) else yaxes_styles
+        self.node_styles    = NODE_STYLES \
+            if isinstance(node_styles, type(None)) else node_styles
+        self.chapter_styles = CHAPTER_STYLES \
+            if isinstance(chapter_styles, type(None)) else chapter_styles
+        self.edge_styles    = EDGE_STYLES \
+            if isinstance(edge_styles, type(None)) else edge_styles
+        
         # provided sizing variables
-        self.chapter_height = kwargs.get('chapter_height', DEFAULT_SIZING['chapter_height'])
-        self.node_height = kwargs.get('node_height', DEFAULT_SIZING['node_height'])
-        self.node_step = kwargs.get('node_step', DEFAULT_SIZING['node_step'])
-        self.chapter_step = kwargs.get('chapter_step', DEFAULT_SIZING['chapter_step'])
-        self.margin_rel_col = kwargs.get('margin_rel_col', DEFAULT_SIZING['margin_rel_col'])
-        self.node_width_rel_col = kwargs.get('node_width_rel_col', DEFAULT_SIZING['node_width_rel_col'])
-        self.chapter_width_rel_fig = kwargs.get('chapter_width_rel_fig', DEFAULT_SIZING['chapter_width_rel_fig'])
-        self.window_height = kwargs.get('window_heigh', DEFAULT_SIZING['window_height'])
+        self.chapter_height = kwargs.get('chapter_height', 
+                                    DEFAULT_SIZING['chapter_height'])
+        self.node_height = kwargs.get('node_height', 
+                                    DEFAULT_SIZING['node_height'])
+        self.node_step = kwargs.get('node_step', 
+                                    DEFAULT_SIZING['node_step'])
+        self.chapter_step = kwargs.get('chapter_step', 
+                                    DEFAULT_SIZING['chapter_step'])
+        self.edge_width = kwargs.get('edge_width', 
+                                    DEFAULT_SIZING['edge_width'])
+        self.margin_rel_col = kwargs.get('margin_rel_col', 
+                                    DEFAULT_SIZING['margin_rel_col'])
+        self.node_width_rel_col = kwargs.get('node_width_rel_col', 
+                                    DEFAULT_SIZING['node_width_rel_col'])
+        self.chapter_width_rel_fig = kwargs.get('chapter_width_rel_fig', 
+                                    DEFAULT_SIZING['chapter_width_rel_fig'])
+        self.window_height = kwargs.get('window_heigh', 
+                                    DEFAULT_SIZING['window_height'])
         
+        # default values of private variables
+        self.__partitions = None
         # private variables
-        self._initialize_private_variables(requested_column_order=None, raise_error=True)
-        # self.__x = 0
-        # self.__y = 0
-        # self.__stack = False
-        # self.__stack_hop = False
-        # self.__column = ''
-        # self.__column_order = \
-        #     self._set_column_order(requested_column_order=None)
-        # self.__column_positions, self.max_column_width = \
-        #     self._assign_column_position()
-        # self.__vertex_positions = \
-        #     self._assign_vertex_positions()     
-        # self.__partitioned_vertices, self.__partitions = \
-        #     self._assign_vertex_partitions( 
-        #         vertical_window = self.window_height,
-        #         include_connected_edges=True,
-        #     )
-        # self.__partitioned_edges = \
-        #     self._assign_edge_partitions(
-        #         partitioned_vertices=self.__partitioned_vertices,
-        #     )
-        # self.__partitioned_traces = \
-        #     self._get_partitioned_traces(
-        #         partitioned_edges=self.__partitioned_edges,
-        #         partitioned_vertices=self.__partitioned_vertices,
-        #     )
+        self._initialize_private_variables(
+            requested_column_order=None, 
+            raise_error=True,
+            )
+        self.figure = None
+    
+    ############################################################################
+    ##                               ATTRIBUTES                               ##
+    ############################################################################
+    @property
+    def chapters(self):
+        if isinstance(self.__vertex_positions, type(None)):
+            raise RuntimeError(f"LLMLogParser is not initialized!")
         
-        # # derived variables
-        # self.node_width = self.max_column_width * self.node_width_rel_col     
+        mask = (self.__vertex_positions["type"] == _CHAPTER)
+        chapters = self.__vertex_positions.loc[mask]
+        chapters = chapters.drop(columns=['type'])
+        chapters.reset_index(drop=True, inplace=True)
         
-        
+        return chapters
+
+
     ############################################################################
     ##                                 PUBLIC                                 ##
     ############################################################################
@@ -164,162 +206,53 @@ class llm_parser:
                 requested_column_order=requested_column_order,
                 raise_error=False,
             )
-        # # reset internal state
-        # self.__x = 0
-        # self.__y = 0
-        # self.__stack = False
-        # self.__stack_hop = False
-        # self.__column = ''
-        # # re-assign column order, columns positions, vertex positions,
-        # # vertex partitioning and edge partitioning
-        # self.__column_order = self._set_column_order(
-        #     requested_column_order=requested_column_order,
-        #     raise_error=False,
-        #     )
-        # self.__column_positions, self.max_column_width = \
-        #     self._assign_column_position()
-        # self.__vertex_positions =  self._assign_vertex_positions()     
-        # self.__partitioned_vertices, self.__partitions = \
-        #     self._assign_vertex_partitions( 
-        #         vertical_window = self.window_height,
-        #         include_connected_edges=True,
-        #     )
-        # self.__partitioned_edges = \
-        #     self._assign_edge_partitions(
-        #         partitioned_vertices=self.__partitioned_vertices,
-        #     )
-        # self.__partitioned_traces = self._get_partitioned_traces(
-        #         partitioned_edges=self.__partitioned_edges,
-        #         partitioned_vertices=self.__partitioned_vertices,
-        #     )    
-            
-        # self.node_width = self.max_column_width * self.node_width_rel_col
-        
+
+
     ##------------------------------------------------------------------------##
     ##                                  report                                ##
     ##------------------------------------------------------------------------##
     def report(self):
+        print(f"->   LLMLogParser.report() ===================================")
+        print(f"->")
         # __column_order
-        print(f"->   column order: ===========================================")
+        print(f"->   LLMLogParser.__column_order =============================")
         column_order = "->      "
         for column in self.__column_order:
             column_order = column_order + f"{column:<10}"
         print(column_order)
         print(f"->")
-        print(f"->   column positions: =======================================")
+        print(f"->   LLMLogParser.__column_positions =========================")
         print(f"->      column    center    width")
         for column, position in self.__column_positions.items():
-            print(f"->       {column:<9} {position['center']:<9.2f} {position['width']:<9.2f}")
+            print(
+                f"->       {column:<9} {position['center']:<9.2f} "\
+                f"{position['width']:<9.2f}")
         print(f"->")
-        print(f"->   vertex positions: =======================================")
+        print(f"->   LLMLogParser.__vertex_positions =========================")
         str_vertex_position = "->      "\
             +self.__vertex_positions.to_string().replace('\n', '\n->      ')
         print(str_vertex_position)
         print(f"->")
-        print(f"->   partitioned vertices: ===================================")
+        print(f"->   LLMLogParser.__partitioned_vertices =====================")
         str_partitioned_vertices = "->      "\
             +self.__partitioned_vertices.to_string().replace('\n', '\n->      ')
         print(str_partitioned_vertices)
-        print(f"->   partitioned edges: ======================================")
+        print(f"->")
+        print(f"->   LLMLogParser.__partitioned_edges ========================")
         str_partitioned_edges = "->      "\
             +self.__partitioned_edges.to_string().replace('\n', '\n->      ')
         print(str_partitioned_edges)
         print(f"->")
-        print(f"->   partitioned traces: =====================================")
+        print(f"->   LLMLogParser.__partitioned_traces =======================")
         str_partitioned_traces = "->      "\
             +self.__partitioned_traces.to_string().replace('\n', '\n->      ')
         print(str_partitioned_traces)
         print(f"->")
-        print(f"->   partitions: =============================================")
+        print(f"->   LLMLogParser.__partitions ===============================")
         str_partitions = "->      "\
             +self.__partitions.to_string().replace('\n', '\n->      ')
         print(str_partitions)
-            
-    
-    ##------------------------------------------------------------------------##
-    ##                               valid_graph                              ##
-    ##------------------------------------------------------------------------##
-    def valid_graph() -> bool:
-        """ Validate graph consistency
-
-        :return: _description_
-        """
-        pass        
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                               get_columns                              ##
-    ##------------------------------------------------------------------------##
-    def get_columns(self) -> List[str]:
-        """ Get a list of columns present in the graph.
-
-        :return: List of columns present in the graph.
-        """
-        columns = list()
-        for _, node_data in self.graph.nodes(data=True):
-            if node_data['metadata']['type'] == _NODE:
-                columns.append(node_data['metadata']['column'])
-        return list(set(columns))
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                             get_chapter_ids                            ##
-    ##------------------------------------------------------------------------##
-    def get_chapter_ids(self) -> List[ChapterID]:
-        """ Collects all chapter_ids within graph.
-
-        :return: _description_
-        """
-        chapter_ids_with_node_ids = get_chapter_ids_with_node_ids(self.graph)
-        chapter_ids = list(chapter_ids_with_node_ids.keys())
-        chapter_ids.sort()
-        
-        return chapter_ids
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                              get_node_data                             ##
-    ##------------------------------------------------------------------------##
-    def get_node_data(self, node_id:NodeID) \
-            -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        node_data = self.graph.nodes(data=True)[node_id]
-        return node_data['data'], node_data['metadata']
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                             get_chapter_data                           ##
-    ##------------------------------------------------------------------------##
-    def get_chapter_data(self, chapter_id:ChapterID) \
-            -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        chapter_data = self.graph.nodes(data=True)[chapter_id]
-        return chapter_data['data'], chapter_data['metadata']
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                              get_vertex_data                           ##
-    ##------------------------------------------------------------------------##
-    def get_vertex_data(self, vertex_id:Union[NodeID, ChapterID]) \
-            -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        vertex_data = self.graph.nodes(data=True)[vertex_id]
-        return vertex_data['data'], vertex_data['metadata']
-    
-    
-    ##------------------------------------------------------------------------##
-    ##                             get_node_column                            ##
-    ##------------------------------------------------------------------------##
-    def get_node_column(self, node_id:NodeID) -> str:
-        _, node_data = self.graph.nodes[node_id]
-        return node_data['metadata']['column']
-
-    
-    # def render_graph(self, partition_name:str=None):
-    #     """ Render the vertices (nodes & chapters) connected with edges. 
-    #         Only single partition can be specified.
-    #     """
-        
-        
-        
-    
+  
     
     ############################################################################
     ##                                 PRIVATE                                ##
@@ -333,7 +266,7 @@ class llm_parser:
                                raise_error:bool=True):
         
         # check whether start & end chapters are already included
-        chapter_ids = self.get_chapter_ids()
+        chapter_ids = get_chapter_ids(graph=self.graph)
         
         # add start node
         if ChapterID(0) not in chapter_ids:
@@ -387,23 +320,13 @@ class llm_parser:
         ordered_columns = list()
         
         # columns present in the graph
-        columns = self.get_columns()
+        columns = get_columns(graph=self.graph)
         
         if isinstance(requested_column_order, type(None)):
             # default order (alphabetically sorted)
             columns.sort()
             ordered_columns = columns
         else:
-                    
-            # for column in columns:
-            #     if column in requested_column_order:
-            #         ordered_columns.append(requested_column_order)
-            #     else:
-            #         extra_column_required = True
-                
-            # if extra_column_required:
-            #     ordered_columns.append(_EXTRA_COLUMN)
-                
             for requested_column in requested_column_order:
                 # assure the columns names with leading & trailing '_' 
                 # are reserved # for internal purpose only
@@ -523,7 +446,7 @@ class llm_parser:
                 )
             # iterate over nodes 
             for node_id in node_ids_per_chapter[chapter_id]:
-                _, metadata = self.get_node_data(node_id)
+                _, metadata = get_node_data(graph=self.graph, node_id=node_id)
                 
                 self._assign_node_position(
                     column=metadata['column'], stack=metadata['stack'])
@@ -769,6 +692,7 @@ class llm_parser:
             )    
             
         self.node_width = self.max_column_width * self.node_width_rel_col
+        self.chapter_width = 1.0 * self.chapter_width_rel_fig
 
 
     ##------------------------------------------------------------------------##
@@ -790,48 +714,61 @@ class llm_parser:
             raise RuntimeError(
                 f"partitioned_vertices have following duplicates = "\
                 f"{partitioned_vertices[mask]['id']}")
-            
+        
+        # partition edges
         _partitioned_edges = partitioned_edges.copy()
-        
-        
-        
         _partitioned_edges['id'] = _partitioned_edges.apply( \
             lambda row: EdgeID(row['id_0'], row['id_1']), 
             axis=1,
         )
-        
-        # _partitioned_edges['id'] = \
-        #     list(tuple(sorted(item)) for item in \
-        #         zip(partitioned_edges['id_0'], partitioned_edges['id_1']))
         _partitioned_edges.drop(columns=['id_0', 'id_1'], inplace=True)
         _partitioned_edges['type'] = _EDGE
         
+        # partition vertices
         _partitioned_vertices = partitioned_vertices.copy()
         _partitioned_vertices['type'] = None
-        
-        
         mask_node = _partitioned_vertices['id'].apply(valid_node_id)
         _partitioned_vertices.loc[mask_node,'type'] = _NODE
         mask_chapter = _partitioned_vertices['id'].apply(valid_chapter_id)
         _partitioned_vertices.loc[mask_chapter,'type'] = _CHAPTER
 
+        # determine rendering order
         partitioned_traces = pd.concat([_partitioned_edges, _partitioned_vertices])
+        partitioned_traces.reset_index(drop=True, inplace=True)
         
         return partitioned_traces
-
-    ##------------------------------------------------------------------------##
-    ##                               _draw_edge                               ##
-    ##------------------------------------------------------------------------##
-    # def _draw_edge_trace(edge_id:x_start:float, y_start:float, x_end:float, y_end:float, 
-    #                 width:float, style:Dict[str, Any], raise_error:bool=True,
-    #                 )
 
 
     ##------------------------------------------------------------------------##
     ##                              _render_edge                              ##
     ##------------------------------------------------------------------------##
-    def _render_edge():
-        pass
+    def _render_edge(self, id:Union[EdgeID, str]) -> go.Scatter:
+        
+        # edge data
+        edge_data, edge_metadata = get_edge_data(graph=self.graph, edge_id=id)
+        # vertex positions
+        node_id_0, node_id_1 = edge_id_to_vertex_ids(id)
+        
+        node_0_index = self.__vertex_positions.query("id == @node_id_0").index[0]
+        node_1_index = self.__vertex_positions.query("id == @node_id_1").index[0]
+
+        x_start = self.__vertex_positions.at[node_0_index, 'x']
+        y_start = self.__vertex_positions.at[node_0_index, 'y']
+        x_end = self.__vertex_positions.at[node_1_index, 'x']
+        y_end = self.__vertex_positions.at[node_1_index, 'y']        
+        
+        # trace 
+        trace = _get_edge_trace(
+            x_start=x_start, 
+            y_start=y_start, 
+            x_end=x_end, 
+            y_end=y_end, 
+            width=self.edge_width, 
+            style=self.edge_styles[edge_metadata['style']], 
+            raise_error=True,
+            )
+
+        return trace
 
 
     ##------------------------------------------------------------------------##
@@ -845,25 +782,28 @@ class llm_parser:
         :return: DataFrame assigning every edge 
             into a partition (partitions overlap)
         """
-        data, metadata = self.get_vertex_data(vertex_id=vertex_id)
-        x = self.__vertex_positions.at[vertex_id, 'x']
-        y = self.__vertex_positions.at[vertex_id, 'y']
+        data, metadata = get_vertex_data(graph=self.graph, vertex_id=vertex_id)
         
-        if self.__vertex_positions.at[vertex_id, 'type'] == _NODE:
+        vertex_index = int(self.__vertex_positions.query("id == @vertex_id").index[0])
+        
+        x = self.__vertex_positions.at[vertex_index, 'x']
+        y = self.__vertex_positions.at[vertex_index, 'y']
+        
+        if self.__vertex_positions.at[vertex_index, 'type'] == _NODE:
             trace = _get_node_trace(
                 x=x,
                 y=y,
-                width=parser.node_width,
-                height=parser.node_height,
-                style=NODE_DEFAULT_STYLES[metadata['style']],
+                width=self.node_width,
+                height=self.node_height,
+                style=self.node_styles[metadata['style']],
             )
-        elif self.__vertex_positions.at[vertex_id, 'type'] == _CHAPTER:
+        elif self.__vertex_positions.at[vertex_index, 'type'] == _CHAPTER:
             trace = _get_chapter_trace(
                 x=x,
                 y=y,
-                width=parser.node_width,
-                height=parser.node_height,
-                style=NODE_DEFAULT_STYLES[metadata['style']],
+                width=self.chapter_width,
+                height=self.chapter_height,
+                style=self.chapter_styles[metadata['style']],
             )
         else:
             raise ValueError(
@@ -875,35 +815,108 @@ class llm_parser:
     ##------------------------------------------------------------------------##
     ##                              _render_graph                             ##
     ##------------------------------------------------------------------------##    
-    def _render_graph():
-        pass
-    
-    
-    
-    # ##------------------------------------------------------------------------##
-    # ##                               _draw_chapter                               ##
-    # ##------------------------------------------------------------------------##
-    # def _render_node_trace(self, node_id:Union[NodeID, str]) -> go.Scatter:
-    #     """ Generates a trace
+    def _render_graph(self, 
+                      layout_style:str="default", 
+                      column_style:str="default", 
+                      xaxis_style:str="default", 
+                      yaxis_style:str="default",
+                      ):
+        
+        figure_data = list()
+        
+        for row in self.__partitioned_traces.itertuples():
+            
+            if row.type == _EDGE:
+                trace = self._render_edge(id=row.id)
+            elif row.type in [_NODE, _CHAPTER]:
+                trace = self._render_vertex(vertex_id=row.id)
+            else: 
+                raise RuntimeError(f"unknown type='{row.type}'!")
+            
+            figure_data.append(trace)
+             
+        # figure object
+        figure=go.Figure(
+            data=figure_data,
+            # layout=go.Layout(
+            #     # constant settings
+            #     # autosize=True,
+            #     # showlegend=False,
+            #     # hovermode='closest',
+            #     # margin=dict(b=0, l=0, r=0, t=0),
+            #     # height=self.__y*1000,
+            #     )
+            )
+        
+        # add additional graphics
+        if not isinstance(column_style, type(None)) or column_style == "none":
+            for column, position in self.__column_positions.items():
+                figure.add_vrect(
+                    x0=position['center'] - position['width']/2,
+                    x1=position['center'] + position['width']/2,
+                    **self.column_styles[column_style],
+                )
 
-    #     :param data: DataFrame assigning every vertex 
-    #         into a partition (partitions overlap)
-    #     :return: DataFrame assigning every edge 
-    #         into a partition (partitions overlap)
-    #     """
-    #     data, metadata = self.get_node_data(node_id=node_id)
-    #     x = self.__vertex_positions.at[node_id, 'x']
-    #     y = self.__vertex_positions.at[node_id, 'y']
+        print(f"updating layout")
+        print(self.layout_styles[layout_style])
+        figure.update_layout(
+            **self.layout_styles[layout_style],
+        )
         
-    #     trace = _get_node_trace(
-    #         x=x,
-    #         y=y,
-    #         width=parser.node_width,
-    #         height=parser.node_height,
-    #         style=NODE_DEFAULT_STYLES[metadata['style']],
-    #     )
+        print(f"updating xaxes")
+        print(self.xaxes_style[xaxis_style])
+        figure.update_xaxes(
+            **self.xaxes_style[xaxis_style],
+        )
         
-    #     return trace
+        print(f"updating yaxes")
+        print(self.yaxes_style[yaxis_style])
+        figure.update_yaxes(
+            **self.yaxes_style[yaxis_style],
+        )
+
+        # assign figure
+        self.figure = copy.deepcopy(figure)
+
+
+        # # set layout
+        # self.update_figure_layout(
+        #     **self.layout_styles[layout_style],
+        #     xaxis=self.xaxes_style[xaxis_style],
+        #     yaxis=self.yaxes_style[yaxis_style],
+        # )
+
+
+    ##------------------------------------------------------------------------##
+    ##                           update_figure_layout                         ##
+    ##------------------------------------------------------------------------##
+    def update_figure_layout(self, **kwargs):
+        print("update_figure_layout()=========================================")
+        for key, value in kwargs.items():
+            print(f"{key} : {value}")
+        # print(kwargs["xaxis"])
+        # print(kwargs["yaxis"])
+        self.figure.update_layout(
+            **kwargs,
+        )
+
+
+    ##------------------------------------------------------------------------##
+    ##                             render_figure                              ##
+    ##------------------------------------------------------------------------##
+    def render_figure(self, 
+                      layout_style:str="default", 
+                      column_style:str="default", 
+                      xaxis_style:str="default", 
+                      yaxis_style:str="default",
+                      ) -> go.Figure:
+        self._render_graph(  
+            layout_style=layout_style, 
+            column_style=column_style, 
+            xaxis_style=xaxis_style, 
+            yaxis_style=yaxis_style,
+        )
+        return self.figure
 
 
 ################################################################################
@@ -914,141 +927,19 @@ if __name__ == "__main__":
     import pathlib as pl
     
     try:
-        from llm_logger import llm_logger
+        from llm_logger import LLMLogger
     except ImportError:
-        from llm_logger_src.llm_logger import llm_logger
+        from llm_logger_src.llm_logger import LLMLogger
         
-    logger = llm_logger(
+    logger = LLMLogger(
         path=pl.Path('./'),
         file='test_log.json',
     )
-    
-    logger.new_chapter(title = "A")
-    
-    first_node_id = logger.log(
-        column="other", 
-        style="default", 
-        stack=True,
-        content="This is content.", 
-        relates_to_node_id=None, 
-        relation_content=None,
-    )
-    
-    last_node_id = logger.log(
-        column="other", 
-        style="default", 
-        stack=True,
-        content="This is content.", 
-        relates_to_node_id=None, 
-        relation_content=None,
-    )
-    
-    last_node_id = logger.log(
-        column="other", 
-        style="default", 
-        stack=True,
-        content="This is content.", 
-        relates_to_node_id=last_node_id, 
-        relation_content=None,
-    )
-    logger.new_chapter(title = "B")
-    last_node_id = logger.log(
-        column="C", 
-        style="default", 
-        stack=True,
-        content="This is content.", 
-        relates_to_node_id=None, 
-        relation_content=None,
-    )    
-    
-    last_node_id = logger.log(
-        column="A", 
-        style="default", 
-        stack=False,
-        content="This is content.", 
-        relates_to_node_id=last_node_id, 
-        relation_content=f"Relation to '{last_node_id}'",
-    )
-    logger.new_chapter(title = "C")
-    last_node_id = logger.log(
-        column="B", 
-        style="default", 
-        stack=False,
-        content="This is content.", 
-        relates_to_node_id=first_node_id, 
-        relation_content=f"Relation to '{last_node_id}'",
-    )
-    logger.new_chapter(title = "D")
-    
-    
-    parser = llm_parser(graph=logger.graph)
-    
+
+    parser = LLMLogParser(graph=logger._test())
     parser.report()
     
-    # parser.update_column_order(requested_column_order=['A', 'B', 'C', 'other'])
+    print(parser.chapters)
     
-    # import plotly.graph_objects as go 
-    # fig = go.Figure() 
-    # column_positions, max_column_width = parser._assign_column_position()
-    
-    # for column, position in column_positions.items():
-    #     fig.add_vrect(
-    #         x0=position['center'] - position['width']/2, #position['start'],
-    #         x1=position['center'] + position['width']/2,
-    #         fillcolor='green',
-    #         opacity=0.1,
-    #         line_width=0,
-    #     )
-
-
-    # # get sorted IDs (IDs are always assigned in incremental manner)
-    # chapter_ids_with_node_ids = get_chapter_ids_with_node_ids(parser.graph)
-    # chapter_ids = list(chapter_ids_with_node_ids.keys())
-    # chapter_ids.sort()
-            
-    # vertex_positions =  parser._assign_vertex_positions( 
-    #         chapter_ids=chapter_ids,
-    #         node_ids_per_chapter=chapter_ids_with_node_ids,
-    #     )
-
-    # partitioned_vertices, partitions = parser._assign_partitions(
-    #         vertical_window=1, 
-    #         include_connected_edges=True,
-    #     )
-    
-
-
-    
-    
-    # parser.report()
-    
-    # print(f"+++++++++++++++++++++++++ df_vertices ++++++++++++++++++++++++++++")
-    # print(partitioned_vertices)
-
-    # print(f"++++++++++++++++++++++++ df_partitions +++++++++++++++++++++++++++")
-    # print(partitions)
-
-    # print(vertex_positions)
-
-    # # for id, position in vertex_positions.items():
-    # for row in vertex_positions.itertuples():
-    #     fig.add_trace(
-    #         _get_node_trace(
-    #             x=row.x,
-    #             y=row.y,
-    #             width=parser.node_width,
-    #             height=parser.node_height,
-    #             style=NODE_DEFAULT_STYLES['decision'],
-    #         )
-    #     )
-
-
-    # fig.update_layout(
-    #     yaxis = dict(autorange="reversed"),
-    #     **parser.layout_style,
-    # )
-    # fig.update_xaxes(**parser.xaxes_style)
-    # fig.update_yaxes(**parser.yaxes_style)
-    # fig.show()
-    
-    # print(parser.graph.nodes())
+    # figure = parser.render_figure()
+    # figure.show()
