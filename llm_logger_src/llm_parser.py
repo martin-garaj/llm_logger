@@ -55,10 +55,12 @@ try:
         _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
     from utils.chapters import get_chapter_ids_with_node_ids
     from assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
-        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
+        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES, \
+        NODE_ANNOTATIONS, CHAPTER_ANNOTATIONS
     from assets.sizing import DEFAULT_SIZING
     from utils.graphics import _get_node_trace, \
-        _get_chapter_trace, _get_edge_trace
+        _get_chapter_trace, _get_edge_trace, _set_node_text, \
+        _set_chapter_text, _set_edge_text, _get_annotation
     from utils.graph import get_columns, get_chapter_ids, \
         get_node_data, get_vertex_data, get_edge_data
 except ImportError:
@@ -66,10 +68,12 @@ except ImportError:
         _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
     from llm_logger_src.utils.chapters import get_chapter_ids_with_node_ids
     from llm_logger_src.assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
-        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
+        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES, \
+        NODE_ANNOTATIONS, CHAPTER_ANNOTATIONS
     from llm_logger_src.assets.sizing import DEFAULT_SIZING
     from llm_logger_src.utils.graphics import _get_node_trace, \
-        _get_chapter_trace, _get_edge_trace
+        _get_chapter_trace, _get_edge_trace, _set_node_text, \
+        _set_chapter_text, _set_edge_text, _get_annotation
     from llm_logger_src.utils.graph import get_columns, get_chapter_ids, \
         get_node_data, get_vertex_data, get_edge_data
 
@@ -120,6 +124,8 @@ class LLMLogParser:
                 node_styles:Dict[str, Dict[str, Any]] = None,
                 chapter_styles:Dict[str, Dict[str, Any]] = None,
                 edge_styles:Dict[str, Dict[str, Any]] = None,
+                node_annotations:Dict[str, Dict[str, Any]] = None,
+                chapter_annotations:Dict[str, Dict[str, Any]] = None,
                 **kwargs,
             ):
         # internal variable
@@ -142,6 +148,10 @@ class LLMLogParser:
             if isinstance(chapter_styles, type(None)) else chapter_styles
         self.edge_styles    = EDGE_STYLES \
             if isinstance(edge_styles, type(None)) else edge_styles
+        self.node_annotations = NODE_ANNOTATIONS \
+            if isinstance(node_annotations, type(None)) else node_annotations
+        self.chapter_annotations = CHAPTER_ANNOTATIONS \
+            if isinstance(chapter_annotations, type(None)) else chapter_annotations
         
         # provided sizing variables
         self.chapter_height = kwargs.get('chapter_height', 
@@ -186,6 +196,13 @@ class LLMLogParser:
         chapters.reset_index(drop=True, inplace=True)
         
         return chapters
+    
+    @property
+    def aspect_ratio(self):
+        if isinstance(self.__vertex_positions, type(None)):
+            raise RuntimeError(f"LLMLogParser is not initialized!")
+
+        return self.__y
 
 
     ############################################################################
@@ -742,7 +759,7 @@ class LLMLogParser:
     ##------------------------------------------------------------------------##
     ##                              _render_edge                              ##
     ##------------------------------------------------------------------------##
-    def _render_edge(self, id:Union[EdgeID, str]) -> go.Scatter:
+    def _render_edge(self, id:Union[EdgeID, str], trace_index:int) -> go.Scatter:
         
         # edge data
         edge_data, edge_metadata = get_edge_data(graph=self.graph, edge_id=id)
@@ -764,9 +781,11 @@ class LLMLogParser:
             x_end=x_end, 
             y_end=y_end, 
             width=self.edge_width, 
-            style=self.edge_styles[edge_metadata['style']], 
+            style=self.edge_styles.get(edge_metadata['style'], self.edge_styles["__default__"]),
             raise_error=True,
             )
+        
+        trace = _set_edge_text(trace=trace, trace_index=trace_index)
 
         return trace
 
@@ -774,7 +793,7 @@ class LLMLogParser:
     ##------------------------------------------------------------------------##
     ##                             _render_vertex                             ##
     ##------------------------------------------------------------------------##
-    def _render_vertex(self, vertex_id:Union[NodeID, str]) -> go.Scatter:
+    def _render_vertex(self, vertex_id:Union[NodeID, str], trace_index:int) -> go.Scatter:
         """ Generates a trace
 
         :param data: DataFrame assigning every vertex 
@@ -795,7 +814,20 @@ class LLMLogParser:
                 y=y,
                 width=self.node_width,
                 height=self.node_height,
-                style=self.node_styles[metadata['style']],
+                style=self.node_styles.get(metadata['style'], self.node_styles["__default__"]),
+            )
+            trace = _set_node_text(
+                    trace = trace, 
+                    trace_index=trace_index,
+                    data=data, 
+                    metadata=metadata, 
+                    excerpt_len=50,
+                )
+            annotation = _get_annotation(
+                x=x,
+                y=y,
+                text=metadata["column"],\
+                style=self.node_annotations.get(metadata['style'], self.node_annotations["__default__"]),
             )
         elif self.__vertex_positions.at[vertex_index, 'type'] == _CHAPTER:
             trace = _get_chapter_trace(
@@ -803,33 +835,48 @@ class LLMLogParser:
                 y=y,
                 width=self.chapter_width,
                 height=self.chapter_height,
-                style=self.chapter_styles[metadata['style']],
+                style=self.chapter_styles.get(metadata['style'], self.chapter_styles["__default__"]),
+            )
+            trace = _set_chapter_text(
+                trace = trace, 
+                trace_index=trace_index,
+                data=data, 
+                metadata=metadata, 
+                excerpt_len=50,
+            )
+            annotation = _get_annotation(
+                x=x,
+                y=y,
+                text=data["title"],
+                style=self.chapter_annotations.get(metadata['style'], self.chapter_annotations["__default__"]),
             )
         else:
             raise ValueError(
                 f"vertex_id='{vertex_id}' is of unknown vertex type!")
             
-        return trace
+        return trace, annotation
 
     
     ##------------------------------------------------------------------------##
     ##                              _render_graph                             ##
     ##------------------------------------------------------------------------##    
     def _render_graph(self, 
-                      layout_style:str="default", 
-                      column_style:str="default", 
-                      xaxis_style:str="default", 
-                      yaxis_style:str="default",
+                      layout_style:str="__default__", 
+                      column_style:str="__default__", 
+                      xaxis_style:str="__default__", 
+                      yaxis_style:str="__default__",
                       ):
         
         figure_data = list()
+        annotations = list()
         
-        for row in self.__partitioned_traces.itertuples():
+        for trace_index, row in enumerate(self.__partitioned_traces.itertuples()):
             
             if row.type == _EDGE:
-                trace = self._render_edge(id=row.id)
+                trace = self._render_edge(id=row.id, trace_index=trace_index)
             elif row.type in [_NODE, _CHAPTER]:
-                trace = self._render_vertex(vertex_id=row.id)
+                trace, annotation = self._render_vertex(vertex_id=row.id, trace_index=trace_index)
+                annotations.append(annotation)
             else: 
                 raise RuntimeError(f"unknown type='{row.type}'!")
             
@@ -837,16 +884,15 @@ class LLMLogParser:
              
         # figure object
         figure=go.Figure(
-            data=figure_data,
-            # layout=go.Layout(
-            #     # constant settings
-            #     # autosize=True,
-            #     # showlegend=False,
-            #     # hovermode='closest',
-            #     # margin=dict(b=0, l=0, r=0, t=0),
-            #     # height=self.__y*1000,
-            #     )
+            data=figure_data, #+ annotations,
+            layout=go.Layout(
+                # constant settings
+                showlegend=False,
+                )
             )
+        
+        for annotation in annotations:
+            figure.add_annotation(**annotation)
         
         # add additional graphics
         if not isinstance(column_style, type(None)) or column_style == "none":
@@ -858,19 +904,19 @@ class LLMLogParser:
                 )
 
         print(f"updating layout")
-        print(self.layout_styles[layout_style])
         figure.update_layout(
             **self.layout_styles[layout_style],
         )
         
         print(f"updating xaxes")
-        print(self.xaxes_style[xaxis_style])
+        # self.xaxes_style[xaxis_style]["range"] = [0, 1]
         figure.update_xaxes(
             **self.xaxes_style[xaxis_style],
         )
         
         print(f"updating yaxes")
-        print(self.yaxes_style[yaxis_style])
+        # self.yaxes_style[yaxis_style]["range"] = [0, self.__y]
+        # print(self.yaxes_style[yaxis_style])
         figure.update_yaxes(
             **self.yaxes_style[yaxis_style],
         )
@@ -905,10 +951,10 @@ class LLMLogParser:
     ##                             render_figure                              ##
     ##------------------------------------------------------------------------##
     def render_figure(self, 
-                      layout_style:str="default", 
-                      column_style:str="default", 
-                      xaxis_style:str="default", 
-                      yaxis_style:str="default",
+                      layout_style:str="__default__", 
+                      column_style:str="__default__", 
+                      xaxis_style:str="__default__", 
+                      yaxis_style:str="__default__",
                       ) -> go.Figure:
         self._render_graph(  
             layout_style=layout_style, 
@@ -917,6 +963,7 @@ class LLMLogParser:
             yaxis_style=yaxis_style,
         )
         return self.figure
+
 
 
 ################################################################################

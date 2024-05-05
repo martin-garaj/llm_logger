@@ -44,17 +44,15 @@ div.fig-plotly {
     grid-row: 2;
     grid-column: 2;
     overflow-y: scroll;
-    /* overflow-x: hidden; */
     height: 100%;
-    
 }
 
 /* ******************************* fig-graph ******************************** */
  /* added to correct small height of the  UI */
 .fig-graph {
-    height: calc(100vh - var(--header-height) - var(--footer-height) - var(--fig-title-height));
-    /* width: 100%;
-    display: inline-block; */
+    /* height: calc(100vh - var(--header-height) - var(--footer-height) - var(--fig-title-height)); */
+    width: 100%;
+    /* height: 1000%;  */
 }
 
 
@@ -84,7 +82,7 @@ div.fig-chapter {
     user-select: none;
 }
 
-div.fig-chapter-selected {
+div.fig-chapter-highlight {
     width: 2em; 
     height: 3.6em; 
     box-sizing: content-box;

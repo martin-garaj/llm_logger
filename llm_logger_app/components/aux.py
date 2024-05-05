@@ -15,6 +15,10 @@ def aux() -> html.Div:
             ),
             dcc.Store(id='fig-scroll-data'),
             dcc.Store(id='fig-chapter-locations'),
+            html.Div(id='chapter-position-json', children=""),
+            # dcc.Store(id='fig-graph-aspect-ratio', data={"aspect_ratio":1.0}),
+            # html.Div(id='fig-graph-aspect-ratio'),
+            html.Div(id='fig-graph-aspect-ratio', children="1.0"),
         ],
         style={"display":"none"},
     )

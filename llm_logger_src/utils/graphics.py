@@ -109,7 +109,7 @@ def _get_edge_trace(x_start:float, y_start:float, x_end:float, y_end:float,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
 ##                             _get_chapter_trace                             ##
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-def _get_chapter_trace(x:float, y:float, width:float, height:float, 
+def _get_chapter_trace(x:float, y:float, width:float, height:float,
                     style:Dict[str, Any],
                     ) -> go.Scatter:
     
@@ -135,6 +135,115 @@ def _get_chapter_trace(x:float, y:float, width:float, height:float,
     return trace
 
 
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+##                               _set_node_text                               ##
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+def _set_node_text(trace:go.Scatter, 
+                   trace_index:int,
+                    data:dict=None, 
+                    metadata:dict=None, 
+                    excerpt_len:int=50,
+                    ) -> go.Scatter:
+    
+    
+    content = "" if data is None else str(data.get("content", ""))
+    time = "" if metadata is None else str(metadata.get("time", "time unknown"))
+    column = "" if metadata is None else str(metadata.get("column", "no label"))
+    
+    # appears as label
+    # trace["text"] = [str(column).replace('\n', '<br />')]
+    
+    # appears on hover
+    if len(content) > excerpt_len:
+        excerpt = content[0:excerpt_len-4] + " ..."
+    else:
+        excerpt = content
+        
+    trace['hoverinfo'] = "name" # text, name, none (no hover)
+    # trace["name"] = \
+    #       time + '<br />' \
+    #     + column + '<br />' \
+    #     + '<br /> ======= CONTENT EXCERPT ======= <br />' \
+    #     + excerpt.replace('\n', '<br />')
+    
+    trace["name"] = excerpt.replace('\n', '<br />')   
+    
+    # appears in the display window
+    trace["customdata"] = [
+        dict(trace_index=trace_index, # pointer to this within figure
+             content_lines=content.split('\n'),
+        ),
+    ]
+    
+    return trace
+
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+##                              _set_chapter_text                             ##
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+def _set_chapter_text(trace:go.Scatter, 
+                    trace_index:int,
+                    data:dict=None, 
+                    metadata:dict=None, 
+                    excerpt_len:int=50,
+                    ) -> go.Scatter:
+    
+    trace['hoverinfo'] = "none" # text, name, none (no hover)
+    # appears as label
+    # trace["text"] = [str(data["title"]).replace('\n', '<br />')]
+
+    trace["customdata"] = [
+        dict(trace_index=trace_index, # pointer to this within figure
+        ),
+    ]
+    
+    return trace
+
+
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+##                               _set_edge_text                               ##
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+def _set_edge_text(trace:go.Scatter, 
+                    trace_index:int,
+                    data:dict=None, 
+                    metadata:dict=None, 
+                    excerpt_len:int=50,
+                    ) -> go.Scatter:
+    
+
+    trace['hoverinfo'] = "none" # text, name, none (no hover)
+    trace["customdata"] = [
+        dict(trace_index=trace_index, # pointer to this within figure
+        ),
+    ]
+    
+    return trace
+
+
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+##                               _set_edge_text                               ##
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+def _get_annotation(x:float, y:float, text:str, style:dict):
+    
+    # not available to user
+    style["captureevents"] = False
+    style["showarrow"] = False
+    
+    annotation = dict(
+        x=x,
+        y=y,
+        text=text,
+        # font=dict(
+        #     family="Courier New, monospace",
+        #     size=16,
+        #     color="#ffffff"
+        #     ),
+        # align="center",
+        # captureevents = False,
+        # showarrow  = False,
+        **style,
+    )
+
+    return annotation
 ################################################################################
 ##                                    TESTS                                   ##
 ################################################################################

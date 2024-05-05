@@ -1,15 +1,15 @@
 from dash import Input, Output
 from dash.exceptions import PreventUpdate
-from dash import html
+from dash import html, no_update
 
 
 
 def register_select_node(app):
     @app.callback(
         Output('display', 'children'),
-        Input('display', 'id')
+        Input('fig-graph', 'clickData')
     )
-    def select_node(trigger):
+    def select_node(clickData):
 
         lines = ["Ths is line 1",
          "",
@@ -30,6 +30,15 @@ def register_select_node(app):
         "register_render_test_figure(app)",
          ]
 
+
+        if clickData is None:
+            lines = ["Select node in graph."]
+        else:
+            try:
+                lines = clickData['points'][0]['customdata'][0]["content_lines"]
+            except KeyError:
+                return no_update
+                
         divs = list()
 
         divs.append(
