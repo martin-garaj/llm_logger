@@ -7,12 +7,12 @@
 
         if (figPlotly) {
             console.log('setupPlotlyScrollListener() -> Fig-plotly found, setting up listener...');
-            const positionsJson = document.getElementById('chapter-position-json').textContent;
+            const positionsJson = document.getElementById('fig-chapter-locations-json').textContent;
             try {
                 const positions = JSON.parse(positionsJson);
                 figPlotly.addEventListener('scroll', function() {
                     const currentScroll = this.scrollTop / (this.scrollHeight - this.clientHeight);
-                    const chapterIndex = findCurrentChapter(currentScroll, positions.scroll);
+                    const chapterIndex = findCurrentChapter(currentScroll, positions.scrollRelative);
                     updateActiveChapter(chapterIndex);
                 });
                 clearInterval(intervalId);  // Clear the interval using the locally scoped variable
@@ -27,15 +27,29 @@
 
     function findCurrentChapter(currentScroll, chapterStarts) {
         let chapterIndex = null;
-        for (let i = 0; i < chapterStarts.length - 1; i++) {
-            if (currentScroll >= chapterStarts[i] && currentScroll < chapterStarts[i + 1]) {
-                chapterIndex = i;
-                break;
+
+        if (currentScroll < chapterStarts[0]) {
+            chapterIndex = 0;
+        } else if (currentScroll >= chapterStarts[chapterStarts.length-1]) {
+            chapterIndex = chapterStarts.length-1;
+        } else {
+            for (let i = 0; i < chapterStarts.length - 1; i++) {
+                if (currentScroll >= chapterStarts[i] && currentScroll < chapterStarts[i + 1]) {
+                    chapterIndex = i;
+                    break;
+                }
             }
         }
-        if (chapterIndex === null && currentScroll >= chapterStarts[chapterStarts.length - 1]) {
-            chapterIndex = chapterStarts.length - 1;
-        }
+        // for (let i = 0; i < chapterStarts.length - 1; i++) {
+
+        //     if (currentScroll >= chapterStarts[i] && currentScroll < chapterStarts[i + 1]) {
+        //         chapterIndex = i;
+        //         break;
+        //     }
+        // }
+        // if (chapterIndex === null && currentScroll >= chapterStarts[chapterStarts.length - 1]) {
+        //     chapterIndex = chapterStarts.length - 1;
+        // }
         console.log(`findCurrentChapter() -> ${chapterIndex}`);
         return chapterIndex;
     }

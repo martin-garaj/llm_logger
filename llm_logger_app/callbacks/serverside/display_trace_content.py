@@ -1,41 +1,23 @@
-from dash import Input, Output
+from dash import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import html, no_update
 
 
-
-def register_select_node(app):
+def register_display_trace_content(app):
     @app.callback(
         Output('display', 'children'),
-        Input('fig-graph', 'clickData')
+        Input('fig-graph', 'clickData'),
     )
-    def select_node(clickData):
-
-        lines = ["Ths is line 1",
-         "",
-         "sub_folders = [name for name in os.listdir(plotly_figure_path) if os.path.isdir(os.path.join(plotly_figure_path, name))]",
-         "",
-         "try:",
-        "from llm_logger_app.callbacks.options_open import register_options_open",
-        "from llm_logger_app.callbacks.theme_change import register_theme_change",
-        "from llm_logger_app.callbacks.plotly_figure import",
-        "    register_render_test_figure",
-        "except ImportError:",
-        "   from callbacks.options_open import register_options_open",
-        "   from callbacks.theme_change import register_theme_change",
-        "\tfrom callbacks.plotly_figure import register_render_test_figure",
-        "",
-        "register_options_open(app)",
-        "register_theme_change(app)",
-        "register_render_test_figure(app)",
-         ]
+    def display_trace_content(clickData):
 
 
         if clickData is None:
             lines = ["Select node in graph."]
         else:
             try:
-                lines = clickData['points'][0]['customdata'][0]["content_lines"]
+                lines = str(clickData['points'][0]['customdata'][0]\
+                    ["data"]["content"]).split('\n')
+                
             except KeyError:
                 return no_update
                 

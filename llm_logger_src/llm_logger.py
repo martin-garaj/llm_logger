@@ -52,7 +52,7 @@ class LLMLogger:
         self.__time_format = kwargs.get("time_format", dt.timezone.utc)
         
         # state variables
-        self.graph = nx.DiGraph(
+        self.graph = nx.Graph(
             metadata=dict(time=dt.datetime.now(self.__time_format).isoformat()),
             )
         self.chapter_counter = 0
@@ -106,6 +106,7 @@ class LLMLogger:
         self.graph.add_node(
             node_for_adding = node_id,
             data=dict(
+                title="",
                 content=content),
             metadata=dict(
                 time=dt.datetime.now(self.__time_format).isoformat(),
@@ -123,6 +124,7 @@ class LLMLogger:
                 u_of_edge=node_id,
                 v_of_edge=relates_to_node_id,
                 data=dict(
+                    title="",
                     content=relation_content,
                     ),
                 metadata=dict(

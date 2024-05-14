@@ -95,8 +95,10 @@ try:
         register_theme_change
     from llm_logger_app.callbacks.serverside.plotly_figure import \
         register_render_test_figure, register_update_positions_json
-    from llm_logger_app.callbacks.serverside.select_node import \
-        register_select_node
+    from llm_logger_app.callbacks.serverside.display_trace_content import \
+        register_display_trace_content
+    from llm_logger_app.callbacks.serverside.fig_highlight_traces import \
+        register_fig_highlight_traces
     from llm_logger_app.callbacks.serverside.store_report import \
         register_store_report
 except ImportError:
@@ -104,13 +106,18 @@ except ImportError:
     from callbacks.serverside.theme_change import register_theme_change
     from callbacks.serverside.plotly_figure import \
         register_render_test_figure, register_update_positions_json
-    from callbacks.serverside.select_node import register_select_node
+    from callbacks.serverside.display_trace_content import \
+        register_display_trace_content
+    from callbacks.serverside.fig_highlight_traces import \
+        register_fig_highlight_traces
     from callbacks.serverside.store_report import register_store_report
 
 register_options_open(app)
 register_theme_change(app)
 register_render_test_figure(app)
-register_select_node(app)
+register_display_trace_content(app)
+register_fig_highlight_traces(app)
+
 register_store_report(app)
 
 

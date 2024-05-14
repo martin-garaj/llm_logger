@@ -11,7 +11,7 @@ DEFAULT_SIZING = dict(
     node_width_rel_col      = 0.70, # node width relative to column
     node_step               = 0.07, # absolute vertical step before node vertex
     # edge
-    edge_width              = 0.01, # absolute width of edge
+    edge_width              = 0.005, # absolute width of edge
     # column
     margin_rel_col          = 0.10, # relative column margin (relative to column)
     # window
