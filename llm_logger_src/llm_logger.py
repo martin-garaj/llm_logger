@@ -3,6 +3,7 @@ import pathlib as pl
 from typing import Any, Literal
 import networkx as nx
 import datetime as dt
+import numpy as np
 
 if __name__ == "__main__":
     import sys
@@ -17,10 +18,12 @@ if __name__ == "__main__":
     print(f"TESTING: add '{project_root_in_sys}' to PYTHONPATH")
 
 try:
-    from utils.ids import NodeID, ChapterID, _NODE, _CHAPTER
+    from utils.ids import NodeID, ChapterID, _NODE, _CHAPTER, \
+        _EDGE
     from utils.chapters import get_chapter_ids_with_node_ids
 except ImportError:
-    from llm_logger_src.utils.ids import NodeID, ChapterID, _NODE, _CHAPTER
+    from llm_logger_src.utils.ids import NodeID, ChapterID, _NODE, _CHAPTER, \
+        _EDGE
     from llm_logger_src.utils.chapters import get_chapter_ids_with_node_ids
 
 
@@ -46,11 +49,10 @@ class LLMLogger:
         self.path = path.resolve()
         self.file = file
         self.file_rewrite = kwargs.get("file_rewrite", False)
-        self.__time_format = kwargs.get("time_format", dt.timezone.utc)
         
         # state variables
-        self.graph = nx.DiGraph(
-            metadata=dict(time=dt.datetime.now(self.__time_format).isoformat()),
+        self.graph = nx.Graph(
+            metadata=dict(time=str(dt.datetime.timestamp(dt.datetime.now()))),
             )
         self.chapter_counter = 0
         self.node_counter = 0
@@ -103,9 +105,10 @@ class LLMLogger:
         self.graph.add_node(
             node_for_adding = node_id,
             data=dict(
+                title="",
                 content=content),
             metadata=dict(
-                time=dt.datetime.now(self.__time_format).isoformat(),
+                time=str(dt.datetime.timestamp(dt.datetime.now())),
                 type=_NODE,
                 column = column.strip('_'),
                 style = style.strip('_'),
@@ -120,9 +123,12 @@ class LLMLogger:
                 u_of_edge=node_id,
                 v_of_edge=relates_to_node_id,
                 data=dict(
+                    title="",
                     content=relation_content,
                     ),
                 metadata=dict(
+                    time=str(dt.datetime.timestamp(dt.datetime.now())),
+                    type=_EDGE,
                     style=relation_style.strip('_'),
                     ),
                 )
@@ -155,7 +161,7 @@ class LLMLogger:
                 title=title,
                 content=content),
             metadata=dict(
-                time=dt.datetime.now(self.__time_format).isoformat(),
+                time=str(dt.datetime.timestamp(dt.datetime.now())),
                 type=_CHAPTER,
                 style = style.strip('_'),
                 ),
@@ -178,98 +184,157 @@ class LLMLogger:
     ############################################################################
     ##                                PRIVATE                                 ##
     ############################################################################
-    def _test(self):
-        self.new_chapter(title = "A")
+    def _test(self, num_nodes:int=10, num_chapters:int=5, num_columns:int=3, connectivity:float=0.333):
         
-        first_node_id = self.log(
-            column="other", 
-            style="default", 
-            stack=True,
-            content="This is content.", 
-            relates_to_node_id=None, 
-            relation_content=None,
-        )
+        with open(__file__, "r") as this_file:
+            text = this_file.read()
+        len_text = len(text)
         
-        last_node_id = self.log(
-            column="other", 
-            style="default", 
-            stack=True,
-            content="This is content.", 
-            relates_to_node_id=None, 
-            relation_content=None,
-        )
+        rng = np.random.default_rng(num_nodes+num_chapters+num_columns)
+        letters = list(map(chr, range(65, 90)))
+        styles=["default", "decision", "success", "failure", "error"]
         
-        last_node_id = self.log(
-            column="other", 
-            style="default", 
-            stack=True,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=None,
-        )
-        self.new_chapter(title = "B")
-        last_node_id = self.log(
-            column="C", 
-            style="default", 
-            stack=True,
-            content="This is content.", 
-            relates_to_node_id=None, 
-            relation_content=None,
-        )    
+        def rnd_elem(array, max:int=None) -> int:
+            if len(array) == 0:
+                return None
+            if max is None:
+                idx = rng.integers(low=0, high=len(array), size=1)[0]
+                return array[idx]
+            else:
+                if max > len(array):
+                    print(array)
+                    raise ValueError(f"max={max}, but maximum is {len(array)}!")
+                idx = rng.integers(low=0, high=max, size=1)[0]
+                return array[idx]
+            
+            
+        if num_columns > len(letters):
+            raise ValueError(
+                f"Max. supported num_columns={len(letters)}, "\
+                f"but {num_columns} are required!")
+
+        count_nodes = 0
+        count_chapters = 0
+        node_ids = list()
+    
+        for chapter_idx in range(num_chapters):
+            count_chapters = count_chapters + 1
+            chapter_title = f"{chapter_idx+1}." + rnd_elem(letters)
+            self.new_chapter(title = chapter_title)
+            
+            # last chapter
+            if chapter_idx == num_chapters-1:
+                new_nodes = num_nodes - count_nodes
+            else:
+                max_new_nodes = int((num_nodes - count_nodes - count_chapters) / 2)
+                max_new_nodes = max_new_nodes if max_new_nodes > 0 else 0
+                new_nodes = rng.integers(low=0, high=max_new_nodes+1, size=1)[0]
+                
+            for node_idx in range(new_nodes):
+                node_id = self.log(
+                    column=rnd_elem(letters, max=num_columns), 
+                    style=rnd_elem(styles), 
+                    stack=rnd_elem([True, False]),
+                    content=text[0:rng.integers(low=1, high=len_text, size=1)[0]], 
+                    relates_to_node_id=rnd_elem(node_ids) if rng.random() < connectivity else None, 
+                    relation_content=None,
+                )
+                node_ids.append(node_id)
+                count_nodes = count_nodes + 1
         
-        last_node_id = self.log(
-            column="A", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
-        self.new_chapter(title = "C")
-        last_node_id = self.log(
-            column="B", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=first_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
+        # print(__file__)
         
-        last_node_id = self.log(
-            column="A", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
+        # self.new_chapter(title = "A")
         
-        last_node_id = self.log(
-            column="A", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
+        # first_node_id = self.log(
+        #     column="other", 
+        #     style="default", 
+        #     stack=True,
+        #     content="This is content.", 
+        #     relates_to_node_id=None, 
+        #     relation_content=None,
+        # )
         
-        last_node_id = self.log(
-            column="A", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
+        # last_node_id = self.log(
+        #     column="other", 
+        #     style="default", 
+        #     stack=True,
+        #     content="This is content.", 
+        #     relates_to_node_id=None, 
+        #     relation_content=None,
+        # )
         
-        last_node_id = self.log(
-            column="C", 
-            style="default", 
-            stack=False,
-            content="This is content.", 
-            relates_to_node_id=last_node_id, 
-            relation_content=f"Relation to '{last_node_id}'",
-        )
+        # last_node_id = self.log(
+        #     column="other", 
+        #     style="default", 
+        #     stack=True,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=None,
+        # )
+        # self.new_chapter(title = "B")
+        # last_node_id = self.log(
+        #     column="C", 
+        #     style="default", 
+        #     stack=True,
+        #     content="This is content.", 
+        #     relates_to_node_id=None, 
+        #     relation_content=None,
+        # )    
+        
+        # last_node_id = self.log(
+        #     column="A", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
+        # self.new_chapter(title = "C")
+        # last_node_id = self.log(
+        #     column="B", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=first_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
+        
+        # last_node_id = self.log(
+        #     column="A", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
+        
+        # last_node_id = self.log(
+        #     column="A", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
+        
+        # last_node_id = self.log(
+        #     column="A", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
+        
+        # last_node_id = self.log(
+        #     column="C", 
+        #     style="default", 
+        #     stack=False,
+        #     content="This is content.", 
+        #     relates_to_node_id=last_node_id, 
+        #     relation_content=f"Relation to '{last_node_id}'",
+        # )
 
         return self.graph
         
@@ -283,24 +348,29 @@ if __name__ == "__main__":
         file='test_log.json',
     )
     
-    logger.new_chapter(title = "A")
+    # logger.new_chapter(title = "A")
     
-    last_node_id = logger.log(
-        column="other", 
-        style="default", 
-        stack=False,
-        content="This is content.", 
-        relates_to_node_id=None, 
-        relation_content=None,
-    )
+    # last_node_id = logger.log(
+    #     column="other", 
+    #     style="default", 
+    #     stack=False,
+    #     content="This is content.", 
+    #     relates_to_node_id=None, 
+    #     relation_content=None,
+    # )
     
-    last_node_id = logger.log(
-        column="other", 
-        style="default", 
-        stack=False,
-        content="This is content.", 
-        relates_to_node_id=last_node_id, 
-        relation_content=f"Relation to '{last_node_id}'",
-    )
+    # last_node_id = logger.log(
+    #     column="other", 
+    #     style="default", 
+    #     stack=False,
+    #     content="This is content.", 
+    #     relates_to_node_id=last_node_id, 
+    #     relation_content=f"Relation to '{last_node_id}'",
+    # )
+    
+    # logger.report()
+    
+    
+    logger._test(num_nodes=100, num_chapters=10, num_columns=10, connectivity=0.2)
     
     logger.report()

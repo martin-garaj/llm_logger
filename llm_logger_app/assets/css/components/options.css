@@ -1,10 +1,10 @@
 /* ********************************* options ******************************** */
-div.options {
+div.options-closed {
     /* options are hidden by default */
     display: none;
 }
 
-div.options-open {
+div.options-opened {
     /* position within div.app */
     grid-row: 2;
     grid-column: 1;
@@ -37,5 +37,11 @@ div.options-content {
     /* position within div.main-content */
     grid-row: 2;
     grid-column: 1;
+    /* visuals */
+    box-sizing: border-box;
+    border-bottom-left-radius: 0.5;
+    border-bottom-right-radius: 0.5;
+    border-bottom-color: #000000;
+    border-bottom-width: 0.1;
 }
 

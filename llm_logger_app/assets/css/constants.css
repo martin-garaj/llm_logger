@@ -1,0 +1,9 @@
+:root {
+    /* dimensions */
+    --header-height: 2em;
+    --footer-height: 2em;
+    --fig-title-height: 4em;
+    --fig-index-width: 4em;
+    --menu-height: 33vh; /* all menus that appear from the top */
+    --min-menu-height: 10em;
+}

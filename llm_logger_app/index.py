@@ -13,8 +13,6 @@ if __name__ == '__main__':
     import os
     import pathlib as pl
     project_root = pl.Path(os.getcwd()).absolute()
-    # project_src = pl.Path(project_root, 'llm_logger', 'llm_logger_src')
-    # project_app = pl.Path(project_root, 'llm_logger', 'llm_logger_app')
     project_src = pl.Path(project_root, 'llm_logger_src')
     project_app = pl.Path(project_root, 'llm_logger_app')
     
@@ -32,7 +30,7 @@ if __name__ == '__main__':
 
 
 ################################################################################
-##                               initialization                               ##
+##                               INITIALIZATION                               ##
 ################################################################################
 initial_theme = 'light'
 available_themes = dict(
@@ -42,18 +40,19 @@ available_themes = dict(
 
 
 ################################################################################
-##                                  dash app                                  ##
+##                                  DASH APP                                  ##
 ################################################################################
 from dash import Dash
 
 app = Dash(
     __name__,
+    update_title=None,
     suppress_callback_exceptions=True,
 )
 
 
 ################################################################################
-##                                   layout                                   ##
+##                                   LAYOUT                                   ##
 ################################################################################
 from dash import html
 
@@ -63,85 +62,90 @@ try:
     from llm_logger_app.components.footer import footer
     from llm_logger_app.components.main import main
     from llm_logger_app.components.aux import aux
-    
-    from llm_logger_app.callbacks.options_open import register_options_open
-    from llm_logger_app.callbacks.theme_change import register_theme_change
-    from llm_logger_app.callbacks.plotly_figure import register_render_test_figure
-    from llm_logger_app.callbacks.select_node import register_select_node
-    from llm_logger_app.callbacks.store_report import register_store_report
-    
+    from llm_logger_app.components.upload import upload
 except ImportError:
     from components.header import header
     from components.options import options
     from components.footer import footer
     from components.main import main
     from components.aux import aux
+    from components.upload import upload
     
-    from callbacks.options_open import register_options_open
-    from callbacks.theme_change import register_theme_change
-    from callbacks.plotly_figure import register_render_test_figure
-    from callbacks.select_node import register_select_node
-    from callbacks.store_report import register_store_report
-
 
 app.layout = html.Div(
     id="app",
     className="app",
     children=[
-        options(initial_theme=initial_theme, 
+            header(),
+            main(),
+            footer(),
+            aux(),
+            options(
+                initial_theme=initial_theme, 
                 available_themes=available_themes),
-        header(),
-        main(),
-        footer(),
-        aux(),
+            upload(),
         ],
     **{"data-theme": initial_theme},
 )
 
+
 ################################################################################
-##                                  callbacks                                 ##
+##                            SERVER-SIDE CALLBACKS                           ##
 ################################################################################
 try:
-    from llm_logger_app.callbacks.options_open import register_options_open
-    from llm_logger_app.callbacks.theme_change import register_theme_change
-    from llm_logger_app.callbacks.plotly_figure import \
-        register_render_test_figure, register_resize_figure
-    from llm_logger_app.callbacks.clientside.fig_scroll_data import \
-        register_fig_scroll_data
+    from llm_logger_app.callbacks.serverside.options import \
+        register_options_open
+    from llm_logger_app.callbacks.serverside.upload import \
+        register_upload_open
+    from llm_logger_app.callbacks.serverside.theme_change import \
+        register_theme_change
+    from llm_logger_app.callbacks.serverside.plotly_figure import \
+        register_render_test_figure, register_update_positions_json
+    from llm_logger_app.callbacks.serverside.display_trace_content import \
+        register_display_trace_content
+    from llm_logger_app.callbacks.serverside.fig_highlight_traces import \
+        register_fig_highlight_traces
+    from llm_logger_app.callbacks.serverside.store_report import \
+        register_store_report
 except ImportError:
-    from callbacks.options_open import register_options_open
-    from callbacks.theme_change import register_theme_change
-    from callbacks.plotly_figure import register_render_test_figure
-    from callbacks.plotly_figure import register_resize_figure
-    from callbacks.clientside.fig_scroll_data import register_fig_scroll_data
+    from callbacks.serverside.options import register_options_open
+    from callbacks.serverside.upload import register_upload_open
+    from callbacks.serverside.theme_change import register_theme_change
+    from callbacks.serverside.plotly_figure import \
+        register_render_test_figure, register_update_positions_json
+    from callbacks.serverside.display_trace_content import \
+        register_display_trace_content
+    from callbacks.serverside.fig_highlight_traces import \
+        register_fig_highlight_traces
+    from callbacks.serverside.store_report import register_store_report
 
 register_options_open(app)
+register_upload_open(app)
 register_theme_change(app)
 register_render_test_figure(app)
-register_select_node(app)
-
-# register_resize_figure(app)
+register_display_trace_content(app)
+register_fig_highlight_traces(app)
 
 register_store_report(app)
 
-# clientside
+
+################################################################################
+##                            CLIENT-SIDE CALLBACKS                           ##
+################################################################################
+try:
+    from llm_logger_app.callbacks.clientside.fig_scroll_data import register_fig_scroll_data
+except ImportError:
+    from callbacks.clientside.fig_scroll_data import register_fig_scroll_data
+
 register_fig_scroll_data(app)
-
-from dash import ClientsideFunction, Input, Output
-
-# app.clientside_callback(
-#     ClientsideFunction(
-#         namespace='clientside',
-#         function_name='getScrollData'
-#     ),
-#     Output('fig-scroll-data', 'data'),
-#     Input('periodic-check-scroll-position', 'n_intervals')
-# )
+register_update_positions_json(app)
 
 
 ################################################################################
-##                                 run server                                 ##
+##                                 RUN SERVER                                 ##
 ################################################################################
 if __name__ == '__main__':
     
-    app.run_server(debug=False)
+    app.run_server(
+        debug=False,
+        )

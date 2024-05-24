@@ -1,11 +1,85 @@
 ################################################################################
+##                              NODE ANNOTATIONS                              ##
+################################################################################
+# Available variables:
+#   https://plotly.com/python/reference/layout/annotations/#layout-annotations-items-annotation-captureevents
+#
+# Not available (pre-set within code to prevent user interference):
+#   captureevents
+#   showarrow
+NODE_ANNOTATIONS = dict(
+    default = dict(
+            font=dict(
+                family="monospace",
+                size=12,
+                color="white",
+            ),
+            align = "center",
+    ),
+    __default__ = dict(
+            font=dict(
+                family="monospace",
+                size=12,
+                color="white",
+            ),
+            align = "center",
+    ),
+)
+
+################################################################################
+##                             CHAPTER ANNOTATIONS                            ##
+################################################################################
+# Available variables:
+#   https://plotly.com/python/reference/layout/annotations/#layout-annotations-items-annotation-captureevents
+#
+# Not available (pre-set within code to prevent user interference):
+#   captureevents
+#   showarrow
+CHAPTER_ANNOTATIONS = dict(
+    default = dict(
+            font=dict(
+                family="monospace",
+                size=16,
+                color="white",
+            ),
+            align = "center",
+    ),
+    __start__ = dict(
+            font=dict(
+                family="monospace",
+                size=16,
+                color="white",
+            ),
+            align = "center",
+        ),
+    __end__ = dict(
+            font=dict(
+                family="monospace",
+                size=16,
+                color="white",
+            ),
+            align = "center",
+        ),
+    __default__ = dict(
+            font=dict(
+                family="monospace",
+                size=16,
+                color="white",
+            ),
+            align = "center",
+    ),
+)
+
+
+
+################################################################################
 ##                                LAYOUT STYLE                                ##
 ################################################################################
 LAYOUT_STYLES = dict(
-    default = dict(
-            # plot_bgcolor='honeydew',
-            # paper_bgcolor='honeydew',
-            autosize=False,  # Disables automatic resizing based on the container
+    __default__ = dict(
+            plot_bgcolor='azure',
+            paper_bgcolor='azure',
+            autosize=True,  # Disables automatic resizing based on the container
             
             showlegend=False,
             hovermode='closest',
@@ -17,25 +91,24 @@ LAYOUT_STYLES = dict(
 ################################################################################
 ##                                 XAXES STYLE                                ##
 ################################################################################
+# documentation:
+#   https://plotly.com/python/reference/layout/xaxis/
 XAXES_STYLES = dict(
-    default = dict(
-        # mirror=False,
+    __default__ = dict(
+        mirror=False,
         # nticks=0,
         # ticks="",
-        # showgrid=False, 
-        # showline=False,
-        # zeroline=False, 
+        showgrid=False, 
+        showline=False,
+        zeroline=False, 
         # showticklabels=False,
+        automargin=False,
         
-        # fixedrange=True, 
-        # range=(0, 1),
-        # autorange=False,
-        # constrain="domain",
+        fixedrange=True, 
+        range=[0.0, 1.0],
+        autorange=False,
+        constrain="domain",
         # rangemode="nonnegative",
-        
-        fixedrange=True,  # Prevents zooming and panning
-        range=[0, 1],     # Explicitly setting the range from 0 to 1
-        autorange=False   # Ensures that autorange is turned off
     ),
 )
 
@@ -43,14 +116,18 @@ XAXES_STYLES = dict(
 ##                                 YAXES STYLE                                ##
 ################################################################################
 YAXES_STYLES = dict(
-    default = dict(
-        # mirror=False,
-        # nticks=0,
-        # ticks="",
-        # showgrid=False, 
-        # showline=False,
-        # zeroline=False, 
-        # showticklabels=False, 
+    __default__ = dict(
+        mirror=False,
+        nticks=0,
+        ticks="",
+        showgrid=False, 
+        showline=False,
+        zeroline=False, 
+        showticklabels=False, 
+        # tickmode = 'linear',
+        # tick0 = 0.0,
+        # dtick = 0.1,
+        automargin=False,
         
         autorange='reversed',
         scaleanchor="x",
@@ -61,26 +138,12 @@ YAXES_STYLES = dict(
 
 
 ################################################################################
-##                             ANNOTATIONS STYLE                              ##
-################################################################################
-# annotations=[
-#     dict(
-#             showarrow=False,
-#             xref="paper", 
-#             yref="paper",
-#             x=0.005, 
-#             y=-0.002,
-#         )
-#     ],
-
-
-################################################################################
 ##                                COLUMN STYLE                                ##
 ################################################################################
 COLUMN_STYLES = dict(
-    default = dict(
-        fillcolor='green',
-        opacity=0.1,
+    __default__ = dict(
+        fillcolor='gainsboro',
+        opacity=0.9,
         line_width=0,
         layer="below",
     ),
@@ -92,31 +155,75 @@ COLUMN_STYLES = dict(
 ################################################################################
 NODE_STYLES = dict(
     default = dict(
-            fillcolor='blue',
-            # fillpattern = dict(
-            #     fgcolor='green', 
-            #     fillmode='replace', 
-            #     shape="x",
-            #     ),
-            line = dict(width=3.0, color='red'),
+            fillcolor='dodgerblue',
+            line = dict(width=2.0, color='black'),
+            mode = "lines",
+        ),
+    default_selected = dict(
+            fillcolor='dodgerblue',
+            line = dict(width=5.0, color='black'),
             mode = "lines",
         ),
     decision = dict(
-            fillcolor='blue',
-            line = dict(width=3.0, color='green'),
-            mode="lines",
+            fillcolor='mediumvioletred',
+            line = dict(width=2.0, color='black'),
+            mode = "lines",
+        ),
+    decision_selected = dict(
+            fillcolor='mediumvioletred',
+            line = dict(width=5.0, color='black'),
+            mode = "lines",
         ),
     success = dict(
-            fillcolor='limegreen',
-            line = dict(width=3.0, color='green'),
-            mode="lines",
+            fillcolor='seagreen',
+            line = dict(width=2.0, color='black'),
+            mode = "lines",
+        ),
+    success_selected = dict(
+            fillcolor='seagreen',
+            line = dict(width=5.0, color='black'),
+            mode = "lines",
         ),
     failure = dict(
+            fillcolor='orangered',
+            line = dict(width=2.0, color='black'),
+            mode = "lines",
+        ),
+    failure_selected = dict(
+            fillcolor='orangered',
+            line = dict(width=5.0, color='black'),
+            mode = "lines",
+        ),
+    error = dict(
             fillpattern = dict(
                 fgcolor='red', 
                 fillmode='replace', 
                 shape="x"),
-            line = dict(width=3.0, color='red'),
+            line = dict(width=2.0, color='red'),
+            mode = "lines",
+        ),
+    error_selected = dict(
+            fillpattern = dict(
+                fgcolor='red', 
+                fillmode='replace', 
+                shape="x"),
+            line = dict(width=5.0, color='red'),
+            mode = "lines",
+        ),
+    __default__ = dict(
+            fillpattern = dict(
+                fgcolor='blue', 
+                fillmode='replace', 
+                shape="x"),
+            line = dict(width=2.0, color='blue'),
+            mode = "lines",
+        ),
+    __default_selected__ = dict(
+            fillpattern = dict(
+                fgcolor='blue', 
+                fillmode='replace', 
+                shape="x"),
+            line = dict(width=2.0, color='blue'),
             mode = "lines",
         ),
 )
@@ -127,18 +234,31 @@ NODE_STYLES = dict(
 CHAPTER_STYLES = dict(
     default = dict(
             fillcolor='darkorange',
+            opacity=0.7,
             line = dict(width=3.0, color='darkslategray'),
-            mode="lines",
+            mode="text",
         ),
     __start__ = dict(
-            fillcolor='red',
+            fillcolor='crimson',
             line = dict(width=3.0, color='darkslategray'),
-            mode="lines",
+            mode="text",
         ),
     __end__ = dict(
-            fillcolor='green',
+            fillcolor='crimson',
             line = dict(width=3.0, color='darkslategray'),
-            mode="lines",
+            mode="text",
+        ),
+    __default__ = dict(
+            fillcolor='darkorange',
+            opacity=0.7,
+            line = dict(width=3.0, color='darkslategray'),
+            mode="text",
+        ),
+    __default_selected__ = dict(
+            fillcolor='darkorange',
+            opacity=0.7,
+            line = dict(width=3.0, color='darkslategray'),
+            mode="text",
         ),
 )
 
@@ -148,7 +268,23 @@ CHAPTER_STYLES = dict(
 ################################################################################
 EDGE_STYLES = dict(
     default = dict(
-            line = dict(width=3.0, color='blue'),
+            fillcolor='dimgray',
+            line = dict(width=1.0, color='black'),
+            mode = "lines",
+        ),
+    default_selected = dict(
+            fillcolor='black',
+            line = dict(width=8.0, color='black'),
+            mode = "lines",
+        ),
+    __default__ = dict(
+            fillcolor='blue',
+            line = dict(width=1.0, color='black'),
+            mode = "lines",
+        ),
+    __default_selected__ = dict(
+            fillcolor='blue',
+            line = dict(width=8.0, color='black'),
             mode = "lines",
         ),
 )

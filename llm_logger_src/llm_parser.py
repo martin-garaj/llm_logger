@@ -20,7 +20,17 @@ Expected graph structure:
             └── data
                 └── content
 """
-
+if __name__ == "__main__":
+    import sys
+    import os
+    import pathlib as pl
+    file_path = pl.Path(__file__).parent
+    try:
+        sys.path.index(file_path)
+    except ValueError:
+        sys.path.append(file_path)
+    project_root_in_sys = sys.path[sys.path.index(file_path)]
+    print(f"TESTING: add '{project_root_in_sys}' to PYTHONPATH")
 
 ################################################################################
 ##                                  CONSTANTS                                 ##
@@ -50,28 +60,36 @@ from plotly import graph_objects as go
 from typing import Tuple, Dict, Any, Union, List
 import copy
 
-try:
-    from utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
-        _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
-    from utils.chapters import get_chapter_ids_with_node_ids
-    from assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
-        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
-    from assets.sizing import DEFAULT_SIZING
-    from utils.graphics import _get_node_trace, \
-        _get_chapter_trace, _get_edge_trace
-    from utils.graph import get_columns, get_chapter_ids, \
-        get_node_data, get_vertex_data, get_edge_data
-except ImportError:
-    from llm_logger_src.utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
-        _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
-    from llm_logger_src.utils.chapters import get_chapter_ids_with_node_ids
-    from llm_logger_src.assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
-        XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES
-    from llm_logger_src.assets.sizing import DEFAULT_SIZING
-    from llm_logger_src.utils.graphics import _get_node_trace, \
-        _get_chapter_trace, _get_edge_trace
-    from llm_logger_src.utils.graph import get_columns, get_chapter_ids, \
-        get_node_data, get_vertex_data, get_edge_data
+# try:
+from utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
+    _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
+from utils.chapters import get_chapter_ids_with_node_ids
+from assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
+    XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES, \
+    NODE_ANNOTATIONS, CHAPTER_ANNOTATIONS
+from assets.sizing import DEFAULT_SIZING
+from utils.traces import \
+    _get_node_trace, _get_edge_trace, _get_chapter_trace, \
+    _set_node_datastruct, _set_chapter_datastruct, _set_edge_datastruct, \
+    _set_node_metadata, _set_edge_metadata, _get_annotation
+from utils.graph import get_columns, get_chapter_ids, \
+    get_node_data, get_vertex_data, get_edge_data
+from utils.customdata import print_customdata
+# except ImportError:
+#     from llm_logger_src.utils.ids import NodeID, ChapterID, EdgeID, _NODE, \
+#         _CHAPTER, _EDGE, valid_node_id, valid_chapter_id, edge_id_to_vertex_ids
+#     from llm_logger_src.utils.chapters import get_chapter_ids_with_node_ids
+#     from llm_logger_src.assets.styles import LAYOUT_STYLES, COLUMN_STYLES, \
+#         XAXES_STYLES, YAXES_STYLES, NODE_STYLES, CHAPTER_STYLES, EDGE_STYLES, \
+#         NODE_ANNOTATIONS, CHAPTER_ANNOTATIONS
+#     from llm_logger_src.assets.sizing import DEFAULT_SIZING
+#     from llm_logger_src.utils.traces import \
+#         _get_node_trace, _get_edge_trace, _get_chapter_trace, \
+#         _set_node_datastruct, _set_chapter_datastruct, _set_edge_datastruct, \
+#         _set_node_metadata, _set_edge_metadata, _get_annotation
+#     from llm_logger_src.utils.graph import get_columns, get_chapter_ids, \
+#         get_node_data, get_vertex_data, get_edge_data
+#     from llm_logger_src.utils.customdata import print_customdata
 
 
 ################################################################################
@@ -98,7 +116,7 @@ class LLMLogParser:
             │   └── data
             │   │   └── content : Any
             │   └── metadata
-            |       └── time : datetime
+            |       └── time : str(Timestamp)
             |       └── type : str
             |       └── column : str
             |       └── category : str
@@ -120,6 +138,8 @@ class LLMLogParser:
                 node_styles:Dict[str, Dict[str, Any]] = None,
                 chapter_styles:Dict[str, Dict[str, Any]] = None,
                 edge_styles:Dict[str, Dict[str, Any]] = None,
+                node_annotations:Dict[str, Dict[str, Any]] = None,
+                chapter_annotations:Dict[str, Dict[str, Any]] = None,
                 **kwargs,
             ):
         # internal variable
@@ -136,12 +156,26 @@ class LLMLogParser:
             if isinstance(xaxes_styles, type(None)) else xaxes_styles
         self.yaxes_style    = YAXES_STYLES \
             if isinstance(yaxes_styles, type(None)) else yaxes_styles
-        self.node_styles    = NODE_STYLES \
-            if isinstance(node_styles, type(None)) else node_styles
-        self.chapter_styles = CHAPTER_STYLES \
-            if isinstance(chapter_styles, type(None)) else chapter_styles
-        self.edge_styles    = EDGE_STYLES \
-            if isinstance(edge_styles, type(None)) else edge_styles
+        # self.node_styles    = NODE_STYLES \
+        #     if isinstance(node_styles, type(None)) else node_styles
+        # self.chapter_styles = CHAPTER_STYLES \
+        #     if isinstance(chapter_styles, type(None)) else chapter_styles
+        # self.edge_styles    = EDGE_STYLES \
+        #     if isinstance(edge_styles, type(None)) else edge_styles
+        self.__node_styles = dict()
+        self.__chapter_styles = dict()
+        self.__edge_styles = dict()
+        self._set_styles( 
+                node_styles=node_styles, 
+                chapter_styles=chapter_styles, 
+                edge_styles=edge_styles, 
+                required_styles=["__default__", "__default_selected__"], 
+                alt_styles=["selected"],
+            )
+        self.node_annotations = NODE_ANNOTATIONS \
+            if isinstance(node_annotations, type(None)) else node_annotations
+        self.chapter_annotations = CHAPTER_ANNOTATIONS \
+            if isinstance(chapter_annotations, type(None)) else chapter_annotations
         
         # provided sizing variables
         self.chapter_height = kwargs.get('chapter_height', 
@@ -179,14 +213,41 @@ class LLMLogParser:
     def chapters(self):
         if isinstance(self.__vertex_positions, type(None)):
             raise RuntimeError(f"LLMLogParser is not initialized!")
-        
         mask = (self.__vertex_positions["type"] == _CHAPTER)
         chapters = self.__vertex_positions.loc[mask]
         chapters = chapters.drop(columns=['type'])
+        titles = list()
+        for chapter in chapters.itertuples():
+            titles.append(self.graph.nodes[chapter.id]["data"]["title"])
+        chapters = chapters.assign(title = titles)
         chapters.reset_index(drop=True, inplace=True)
-        
         return chapters
+    
+    @property
+    def aspect_ratio(self):
+        if isinstance(self.__vertex_positions, type(None)):
+            raise RuntimeError(f"LLMLogParser is not initialized!")
+        return self.__y
+    
+    @property
+    def related_traces(self):
+        if isinstance(self.__partitioned_traces, type(None)):
+            raise RuntimeError(f"LLMLogParser is not initialized!")
 
+        return copy.deepcopy(self.__related_traces)
+    
+    @property
+    def node_styles(self):
+        return copy.deepcopy(self.__node_styles)
+    
+    @property
+    def chapter_styles(self):
+        return copy.deepcopy(self.__chapter_styles)    
+    
+    @property
+    def edge_styles(self):
+        return copy.deepcopy(self.__edge_styles)
+    
 
     ############################################################################
     ##                                 PUBLIC                                 ##
@@ -211,52 +272,208 @@ class LLMLogParser:
     ##------------------------------------------------------------------------##
     ##                                  report                                ##
     ##------------------------------------------------------------------------##
-    def report(self):
+    def report(self, 
+            column_order:bool=True, 
+            column_positions:bool=True, 
+            vertex_positions:bool=True, 
+            partitioned_vertices:bool=True,
+            partitioned_edges:bool=True,
+            partitioned_traces:bool=True,
+            partitions:bool=True,
+            related_traces:bool=True,
+            chapters:bool=True,
+            figure:bool=True):
         print(f"->   LLMLogParser.report() ===================================")
         print(f"->")
         # __column_order
-        print(f"->   LLMLogParser.__column_order =============================")
-        column_order = "->      "
-        for column in self.__column_order:
-            column_order = column_order + f"{column:<10}"
-        print(column_order)
-        print(f"->")
-        print(f"->   LLMLogParser.__column_positions =========================")
-        print(f"->      column    center    width")
-        for column, position in self.__column_positions.items():
-            print(
-                f"->       {column:<9} {position['center']:<9.2f} "\
-                f"{position['width']:<9.2f}")
-        print(f"->")
-        print(f"->   LLMLogParser.__vertex_positions =========================")
-        str_vertex_position = "->      "\
-            +self.__vertex_positions.to_string().replace('\n', '\n->      ')
-        print(str_vertex_position)
-        print(f"->")
-        print(f"->   LLMLogParser.__partitioned_vertices =====================")
-        str_partitioned_vertices = "->      "\
-            +self.__partitioned_vertices.to_string().replace('\n', '\n->      ')
-        print(str_partitioned_vertices)
-        print(f"->")
-        print(f"->   LLMLogParser.__partitioned_edges ========================")
-        str_partitioned_edges = "->      "\
-            +self.__partitioned_edges.to_string().replace('\n', '\n->      ')
-        print(str_partitioned_edges)
-        print(f"->")
-        print(f"->   LLMLogParser.__partitioned_traces =======================")
-        str_partitioned_traces = "->      "\
-            +self.__partitioned_traces.to_string().replace('\n', '\n->      ')
-        print(str_partitioned_traces)
-        print(f"->")
-        print(f"->   LLMLogParser.__partitions ===============================")
-        str_partitions = "->      "\
-            +self.__partitions.to_string().replace('\n', '\n->      ')
-        print(str_partitions)
-  
+        if column_order:
+            print(f"->   LLMLogParser.__column_order =============================")
+            column_order = "->      "
+            for column in self.__column_order:
+                column_order = column_order + f"{column:<10}"
+            print(column_order)
+            print(f"->")
+        if column_positions:
+            print(f"->   LLMLogParser.__column_positions =========================")
+            print(f"->      column    center    width")
+            for column, position in self.__column_positions.items():
+                print(
+                    f"->       {column:<9} {position['center']:<9.2f} "\
+                    f"{position['width']:<9.2f}")
+            print(f"->")
+        if vertex_positions:
+            print(f"->   LLMLogParser.__vertex_positions =========================")
+            str_vertex_position = "->      "\
+                +self.__vertex_positions.to_string().replace('\n', '\n->      ')
+            print(str_vertex_position)
+            print(f"->")
+        if partitioned_vertices:
+            print(f"->   LLMLogParser.__partitioned_vertices =====================")
+            str_partitioned_vertices = "->      "\
+                +self.__partitioned_vertices.to_string().replace('\n', '\n->      ')
+            print(str_partitioned_vertices)
+            print(f"->")
+        if partitioned_edges:
+            print(f"->   LLMLogParser.__partitioned_edges ========================")
+            str_partitioned_edges = "->      "\
+                +self.__partitioned_edges.to_string().replace('\n', '\n->      ')
+            print(str_partitioned_edges)
+            print(f"->")
+        if partitioned_traces:
+            print(f"->   LLMLogParser.__partitioned_traces =======================")
+            str_partitioned_traces = "->      "\
+                +self.__partitioned_traces.to_string().replace('\n', '\n->      ')
+            print(str_partitioned_traces)
+            print(f"->")
+        if partitions:
+            print(f"->   LLMLogParser.__partitions ===============================")
+            str_partitions = "->      "\
+                +self.__partitions.to_string().replace('\n', '\n->      ')
+            print(str_partitions)
+            print(f"->")
+        if related_traces:
+            print(f"->   LLMLogParser.__related_traces ===========================")
+            str_related_edges = ""
+            max_len = len(str(len(self.__related_traces)))
+            for trace_index, related_indices in self.__related_traces.items():
+                str_related_edges = str_related_edges \
+                    + f"->      {str(trace_index).rjust(max_len)} : "\
+                    f"[{', '.join([str(index).rjust(max_len) for index in related_indices])}]\n"
+            str_related_edges = str_related_edges[0:-1]
+            print(str_related_edges)
+            
+        if chapters:
+            print(f"->   LLMLogParser.chapters ===================================")
+            str_chapters = "->      "\
+                +self.chapters.to_string().replace('\n', '\n->      ')
+            print(str_chapters)
+            print(f"->")
+        if figure:
+            print(f"->   LLMLogParser.figure =====================================")
+            if not isinstance(self.figure, type(None)):
+                skipped = False
+                for idx, trace in enumerate(self.figure["data"]):
+                    if idx < 3 or idx > len(self.figure["data"])-4:
+                        print_customdata(trace)
+                    else:
+                        if not skipped:
+                            print(f"->      ")
+                            print(f"->      ...")
+                            print(f"->      ")
+                            skipped=True
+            else:
+                print(f"->      Figure not rendered yet!")
     
     ############################################################################
     ##                                 PRIVATE                                ##
     ############################################################################
+    ##------------------------------------------------------------------------##
+    ##                               _set_styles                              ##
+    ##------------------------------------------------------------------------##
+    def _set_styles(self, 
+                node_styles:dict=None, 
+                chapter_styles:dict=None, 
+                edge_styles:dict=None, 
+                required_styles:list=["__default__", "__default_selected__"], 
+                alt_styles:list=["selected"],
+            ):
+        
+        # set styles
+        self.__node_styles    = NODE_STYLES \
+            if isinstance(node_styles, type(None)) else node_styles
+        self.__chapter_styles = CHAPTER_STYLES \
+            if isinstance(chapter_styles, type(None)) else chapter_styles
+        self.__edge_styles    = EDGE_STYLES \
+            if isinstance(edge_styles, type(None)) else edge_styles
+    
+        _styles = dict(
+            node_styles = self.__node_styles,
+            chapter_styles = self.__chapter_styles,
+            edge_styles = self.__edge_styles,
+            
+        )
+        # check required fields
+        for name, styles in _styles.items():
+            for required_style in required_styles:
+                if required_style not in styles.keys():
+                    raise RuntimeError(
+                        f"Provided '{name}' do not include "\
+                        f"'{required_style}'! Assure all required styles "\
+                        f"{required_styles} are defined!")
+        
+        # TODO: find a better way to check this
+        # assign missing alternative styles
+        temp_node_styles = copy.deepcopy(self.__node_styles)
+        for style_name in temp_node_styles.keys():
+            # skip required styles, as they are already present
+            if style_name in required_styles:
+                continue
+            # check every alternative style
+            for alt_style in alt_styles:
+                # get alternative and default-alternative style names
+                alt_style_name = f"{style_name}_{alt_style}"
+                default_style_name = f"__default_{alt_style}__"
+                
+                # current 'style_name' is not alternative style
+                style_name_not_alt = (alt_style not in style_name and "__" not in style_name)
+                # alternative style is not defined
+                alt_style_not_defined = \
+                    (alt_style_name not in temp_node_styles.keys())
+                # both conditions are TRUE
+                if style_name_not_alt and alt_style_not_defined:
+                    # add alternative style as a default style
+                    self.__node_styles[alt_style_name] = \
+                        self.__node_styles[default_style_name]
+                        
+        # assign missing alternative styles
+        temp_chapter_styles = copy.deepcopy(self.__chapter_styles)
+        for style_name in temp_chapter_styles.keys():
+            # skip required styles, as they are already present
+            if style_name in required_styles:
+                continue
+            # check every alternative style
+            for alt_style in alt_styles:
+                # get alternative and default-alternative style names
+                alt_style_name = f"{style_name}_{alt_style}"
+                default_style_name = f"__default_{alt_style}__"
+                
+                # current 'style_name' is not alternative style
+                style_name_not_alt = (alt_style not in style_name and "__" not in style_name)
+                # alternative style is not defined
+                alt_style_not_defined = \
+                    (alt_style_name not in temp_chapter_styles.keys())
+                # both conditions are TRUE
+                if style_name_not_alt and alt_style_not_defined:
+                    # add alternative style as a default style
+                    self.__chapter_styles[alt_style_name] = \
+                        self.__chapter_styles[default_style_name]
+                    
+                        
+        # assign missing alternative styles
+        temp_edge_styles = copy.deepcopy(self.__edge_styles)
+        for style_name in temp_edge_styles.keys():
+            # skip required styles, as they are already present
+            if style_name in required_styles:
+                continue
+            # check every alternative style
+            for alt_style in alt_styles:
+                # get alternative and default-alternative style names
+                alt_style_name = f"{style_name}_{alt_style}"
+                default_style_name = f"__default_{alt_style}__"
+                
+                # current 'style_name' is not alternative style
+                style_name_not_alt = (alt_style not in style_name and "__" not in style_name)
+                # alternative style is not defined
+                alt_style_not_defined = \
+                    (alt_style_name not in temp_edge_styles.keys())
+                # both conditions are TRUE
+                if style_name_not_alt and alt_style_not_defined:
+                    # add alternative style as a default style
+                    self.__edge_styles[alt_style_name] = \
+                        self.__edge_styles[default_style_name]
+                    
+            
+        
     ##------------------------------------------------------------------------##
     ##                            _set_column_order                           ##
     ##------------------------------------------------------------------------##
@@ -690,7 +907,9 @@ class LLMLogParser:
                 partitioned_edges=self.__partitioned_edges,
                 partitioned_vertices=self.__partitioned_vertices,
             )    
-            
+        self.__related_traces = self._get_related_traces(
+            self.__partitioned_traces,
+            )
         self.node_width = self.max_column_width * self.node_width_rel_col
         self.chapter_width = 1.0 * self.chapter_width_rel_fig
 
@@ -740,9 +959,59 @@ class LLMLogParser:
 
 
     ##------------------------------------------------------------------------##
+    ##                          _get_related_traces                           ##
+    ##------------------------------------------------------------------------##
+    # TODO: check this as it seems the trace_index is incorrectly assigned or 
+    # related_traces are incorrectly determined.
+    def _get_related_traces(self, partitioned_traces:pd.DataFrame) -> Dict[int, List[int]]:
+        
+        related_traces = dict()
+
+        def __get_node_ids_related_to_edge_id(id:EdgeID):
+            node_id_0, node_id_1 = edge_id_to_vertex_ids(id=id)
+            node_0_trace_index = partitioned_traces.query("id == @node_id_0").index[0]
+            node_1_trace_index = partitioned_traces.query("id == @node_id_1").index[0]
+            return int(node_0_trace_index), int(node_1_trace_index)
+        
+        for row in partitioned_traces.itertuples():
+            trace_index = int(row.Index)
+            related_traces[trace_index] = list()
+            
+            if row.type == _NODE:
+                edge_ids = list(self.graph.edges(row.id))
+                for edge_id in self.graph.edges(row.id):
+                    # get EdgeID
+                    _edge_id = EdgeID(vertex_id_0=edge_id[0], vertex_id_1=edge_id[1])
+                    # get edge index
+                    edge_trace_index = \
+                        int(partitioned_traces.query("id == @_edge_id").index[0])
+                    # get node ids of nodes connected to the EdgeID
+                    node_0_trace_index, node_1_trace_index = \
+                        __get_node_ids_related_to_edge_id(id=_edge_id)
+                    # if edge index not in related_traces, then add
+                    if edge_trace_index not in related_traces[trace_index]:
+                        related_traces[trace_index].append(edge_trace_index)
+                    # if node index not in related_traces and is not clicked node index, then add
+                    if int(row.Index) != node_0_trace_index \
+                        and node_0_trace_index not in related_traces[trace_index]:
+                        related_traces[trace_index].append(node_0_trace_index)
+                    if int(row.Index) != node_1_trace_index \
+                        and node_1_trace_index not in related_traces[trace_index]:
+                        related_traces[trace_index].append(node_1_trace_index)
+            elif row.type == _EDGE:
+                node_0_trace_index, node_1_trace_index = \
+                    __get_node_ids_related_to_edge_id(id=row.id)
+                related_traces[trace_index].append(node_0_trace_index)
+                related_traces[trace_index].append(node_1_trace_index)
+            else:
+                continue
+                
+        return related_traces
+
+    ##------------------------------------------------------------------------##
     ##                              _render_edge                              ##
     ##------------------------------------------------------------------------##
-    def _render_edge(self, id:Union[EdgeID, str]) -> go.Scatter:
+    def _render_edge(self, id:Union[EdgeID, str], trace_index:int) -> go.Scatter:
         
         # edge data
         edge_data, edge_metadata = get_edge_data(graph=self.graph, edge_id=id)
@@ -758,15 +1027,23 @@ class LLMLogParser:
         y_end = self.__vertex_positions.at[node_1_index, 'y']        
         
         # trace 
+        trace_style_name = edge_metadata['style'] \
+            if edge_metadata['style'] in self.chapter_styles.keys() else "__default__"
         trace = _get_edge_trace(
             x_start=x_start, 
             y_start=y_start, 
             x_end=x_end, 
             y_end=y_end, 
             width=self.edge_width, 
-            style=self.edge_styles[edge_metadata['style']], 
+            style=self.edge_styles[trace_style_name],
             raise_error=True,
             )
+        trace = _set_edge_datastruct(
+                    trace=trace, 
+                    trace_index=trace_index,
+                    trace_style=trace_style_name,
+                    data=edge_data, 
+                    )
 
         return trace
 
@@ -774,7 +1051,7 @@ class LLMLogParser:
     ##------------------------------------------------------------------------##
     ##                             _render_vertex                             ##
     ##------------------------------------------------------------------------##
-    def _render_vertex(self, vertex_id:Union[NodeID, str]) -> go.Scatter:
+    def _render_vertex(self, vertex_id:Union[NodeID, str], trace_index:int) -> go.Scatter:
         """ Generates a trace
 
         :param data: DataFrame assigning every vertex 
@@ -790,63 +1067,96 @@ class LLMLogParser:
         y = self.__vertex_positions.at[vertex_index, 'y']
         
         if self.__vertex_positions.at[vertex_index, 'type'] == _NODE:
+            trace_style_name = metadata['style'] \
+                if metadata['style'] in self.node_styles.keys() else "__default__"
             trace = _get_node_trace(
                 x=x,
                 y=y,
                 width=self.node_width,
                 height=self.node_height,
-                style=self.node_styles[metadata['style']],
+                style=self.node_styles[trace_style_name],
+            )
+            trace = _set_node_datastruct(
+                    trace=trace, 
+                    trace_index=trace_index,
+                    trace_style=trace_style_name,
+                    data=data, 
+                    metadata=metadata,
+                    excerpt_len=200,
+                ) 
+            annotation = _get_annotation(
+                x=x,
+                y=y,
+                text=metadata["column"],\
+                style=self.node_annotations.get(metadata['style'], self.node_annotations["__default__"]),
             )
         elif self.__vertex_positions.at[vertex_index, 'type'] == _CHAPTER:
+            trace_style_name = metadata['style'] \
+                if metadata['style'] in self.chapter_styles.keys() else "__default__"
             trace = _get_chapter_trace(
                 x=x,
                 y=y,
                 width=self.chapter_width,
                 height=self.chapter_height,
-                style=self.chapter_styles[metadata['style']],
+                style=self.chapter_styles[trace_style_name],
+            )
+            trace = _set_chapter_datastruct(
+                    trace=trace, 
+                    trace_index=trace_index,
+                    trace_style=trace_style_name,
+                    data=data,
+                )
+            annotation = _get_annotation(
+                x=x,
+                y=y,
+                text=data["title"],
+                style=self.chapter_annotations.get(metadata['style'], self.chapter_annotations["__default__"]),
             )
         else:
             raise ValueError(
                 f"vertex_id='{vertex_id}' is of unknown vertex type!")
-            
-        return trace
+        
+        return trace, annotation
 
     
     ##------------------------------------------------------------------------##
     ##                              _render_graph                             ##
     ##------------------------------------------------------------------------##    
     def _render_graph(self, 
-                      layout_style:str="default", 
-                      column_style:str="default", 
-                      xaxis_style:str="default", 
-                      yaxis_style:str="default",
+                      layout_style:str="__default__", 
+                      column_style:str="__default__", 
+                      xaxis_style:str="__default__", 
+                      yaxis_style:str="__default__",
                       ):
         
         figure_data = list()
+        annotations = list()
         
+        print(f"llm_parser._render_graph() -> ")
         for row in self.__partitioned_traces.itertuples():
-            
+            print(f"->   {row}")
             if row.type == _EDGE:
-                trace = self._render_edge(id=row.id)
+                trace = self._render_edge(id=row.id, trace_index=int(row.Index))
             elif row.type in [_NODE, _CHAPTER]:
-                trace = self._render_vertex(vertex_id=row.id)
+                trace, annotation = self._render_vertex(vertex_id=row.id, trace_index=int(row.Index))
+                annotations.append(annotation)
             else: 
                 raise RuntimeError(f"unknown type='{row.type}'!")
             
+            
             figure_data.append(trace)
-             
+            
         # figure object
         figure=go.Figure(
-            data=figure_data,
-            # layout=go.Layout(
-            #     # constant settings
-            #     # autosize=True,
-            #     # showlegend=False,
-            #     # hovermode='closest',
-            #     # margin=dict(b=0, l=0, r=0, t=0),
-            #     # height=self.__y*1000,
-            #     )
+            data=figure_data, #+ annotations,
+            layout=go.Layout(
+                # constant settings
+                showlegend=False,
+                )
             )
+        
+        for annotation in annotations:
+            figure.add_annotation(**annotation)
         
         # add additional graphics
         if not isinstance(column_style, type(None)) or column_style == "none":
@@ -858,19 +1168,19 @@ class LLMLogParser:
                 )
 
         print(f"updating layout")
-        print(self.layout_styles[layout_style])
         figure.update_layout(
             **self.layout_styles[layout_style],
         )
         
         print(f"updating xaxes")
-        print(self.xaxes_style[xaxis_style])
+        # self.xaxes_style[xaxis_style]["range"] = [0, 1]
         figure.update_xaxes(
             **self.xaxes_style[xaxis_style],
         )
         
         print(f"updating yaxes")
-        print(self.yaxes_style[yaxis_style])
+        # self.yaxes_style[yaxis_style]["range"] = [0, self.__y]
+        # print(self.yaxes_style[yaxis_style])
         figure.update_yaxes(
             **self.yaxes_style[yaxis_style],
         )
@@ -905,10 +1215,10 @@ class LLMLogParser:
     ##                             render_figure                              ##
     ##------------------------------------------------------------------------##
     def render_figure(self, 
-                      layout_style:str="default", 
-                      column_style:str="default", 
-                      xaxis_style:str="default", 
-                      yaxis_style:str="default",
+                      layout_style:str="__default__", 
+                      column_style:str="__default__", 
+                      xaxis_style:str="__default__", 
+                      yaxis_style:str="__default__",
                       ) -> go.Figure:
         self._render_graph(  
             layout_style=layout_style, 
@@ -917,6 +1227,7 @@ class LLMLogParser:
             yaxis_style=yaxis_style,
         )
         return self.figure
+
 
 
 ################################################################################
@@ -936,10 +1247,11 @@ if __name__ == "__main__":
         file='test_log.json',
     )
 
-    parser = LLMLogParser(graph=logger._test())
-    parser.report()
+    parser = LLMLogParser(graph=logger._test(num_nodes=6, num_chapters=2, connectivity=0.9, num_columns=2))
+    # parser.report()
     
     print(parser.chapters)
     
-    # figure = parser.render_figure()
-    # figure.show()
+    figure = parser.render_figure()
+    parser.report()
+    figure.show()

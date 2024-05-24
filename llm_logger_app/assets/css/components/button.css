@@ -1,0 +1,56 @@
+/* ***************************** button-generic ***************************** */
+div.button-generic {
+    /* visuals */
+    display: flex;
+    box-sizing: border-box;
+    border-width: 0.1;
+    border-style: solid;
+    border-radius: 0.5em;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+
+    /* content */
+    text-align: center;
+    font-family: monospace;
+    justify-content: center;
+    align-items: center;
+    
+    /* sizing*/
+    height: 100%;
+    width: 8em;
+
+    /* interaction */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+}
+
+/* ****************************** button-theme ****************************** */
+div.button-theme {
+    /* visuals */
+    display: flex;
+    box-sizing: border-box;
+    border-width: 0.1;
+    border-style: solid;
+    border-radius: 0.5em;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+
+    /* content */
+    text-align: center;
+    font-family: monospace;
+    justify-content: center;
+    align-items: center;
+    
+    /* sizing*/
+    height: var(--header-height);
+    width: 8em;
+
+    /* interaction */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
