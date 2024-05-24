@@ -116,7 +116,7 @@ class LLMLogParser:
             │   └── data
             │   │   └── content : Any
             │   └── metadata
-            |       └── time : datetime
+            |       └── time : str(Timestamp)
             |       └── type : str
             |       └── column : str
             |       └── category : str
@@ -1081,6 +1081,8 @@ class LLMLogParser:
                     trace_index=trace_index,
                     trace_style=trace_style_name,
                     data=data, 
+                    metadata=metadata,
+                    excerpt_len=200,
                 ) 
             annotation = _get_annotation(
                 x=x,

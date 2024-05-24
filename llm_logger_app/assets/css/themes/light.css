@@ -75,7 +75,12 @@ div[data-theme='light'] .footer {
 
 
 /* ********************************* options ******************************** */
-div[data-theme='light'] .options-open {
+div[data-theme='light'] .options-opened {
+    background-color: #ffffffe6;
+}
+
+/* ********************************* options ******************************** */
+div[data-theme='light'] .upload-opened {
     background-color: #ffffffe6;
 }
 

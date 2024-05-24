@@ -13,9 +13,11 @@ def aux() -> html.Div:
                 id='periodic-check-scroll-position', 
                 interval=1000,
             ),
+            dcc.Store(id='constants'),
             dcc.Store(id='fig-scroll-data'),
             dcc.Store(id='fig-chapter-locations'),
             dcc.Store(id='fig-related-traces'),
+            
             dcc.Store(id='fig-node-styles'),
             dcc.Store(id='fig-edge-styles'),
             dcc.Store(id='fig-chapter-styles'),

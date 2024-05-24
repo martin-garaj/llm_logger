@@ -4,7 +4,7 @@ from typing import Dict
 def options(initial_theme:str, available_themes:Dict[str, str]) -> html.Div:
     options_div = html.Div(
         id="options",
-        className="options",
+        className="options-closed",
         children=[
             html.Div(id="options-header", 
                     className="options-header", 

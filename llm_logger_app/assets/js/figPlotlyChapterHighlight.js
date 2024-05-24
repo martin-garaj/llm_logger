@@ -14,6 +14,9 @@
                     const currentScroll = this.scrollTop / (this.scrollHeight - this.clientHeight);
                     const chapterIndex = findCurrentChapter(currentScroll, positions.scrollRelative);
                     updateActiveChapter(chapterIndex);
+                    const chapterTitle = positions.title[chapterIndex];
+                    updateChapterTitle(chapterTitle);
+                    console.log(`setupPlotlyScrollListener() -> ${chapterIndex} : ${chapterTitle}`);
                 });
                 clearInterval(intervalId);  // Clear the interval using the locally scoped variable
                 console.log('setupPlotlyScrollListener() -> Interval cleared, listener attached.');
@@ -40,26 +43,22 @@
                 }
             }
         }
-        // for (let i = 0; i < chapterStarts.length - 1; i++) {
-
-        //     if (currentScroll >= chapterStarts[i] && currentScroll < chapterStarts[i + 1]) {
-        //         chapterIndex = i;
-        //         break;
-        //     }
-        // }
-        // if (chapterIndex === null && currentScroll >= chapterStarts[chapterStarts.length - 1]) {
-        //     chapterIndex = chapterStarts.length - 1;
-        // }
-        console.log(`findCurrentChapter() -> ${chapterIndex}`);
         return chapterIndex;
     }
 
-
-    // Incorrectly returns chapter index, results to 'null' at the very end
     function updateActiveChapter(index) {
         document.querySelectorAll('[data-type="fig-chapter-button"]').forEach((button, idx) => {
             button.className = (idx === index) ? 'fig-chapter-highlight' : 'fig-chapter';
         });
+    }
+
+    function updateChapterTitle(title) {
+        var titleDiv = document.getElementById('fig-title');
+        if (titleDiv) {
+            titleDiv.textContent = title; // Updates the text content of the div
+        } else {
+            console.error('updateChapterTitle() -> No element with id "fig-title" found.');
+        }
     }
 
     // Start the interval when everything is defined

@@ -49,11 +49,10 @@ class LLMLogger:
         self.path = path.resolve()
         self.file = file
         self.file_rewrite = kwargs.get("file_rewrite", False)
-        self.__time_format = kwargs.get("time_format", dt.timezone.utc)
         
         # state variables
         self.graph = nx.Graph(
-            metadata=dict(time=dt.datetime.now(self.__time_format).isoformat()),
+            metadata=dict(time=str(dt.datetime.timestamp(dt.datetime.now()))),
             )
         self.chapter_counter = 0
         self.node_counter = 0
@@ -109,7 +108,7 @@ class LLMLogger:
                 title="",
                 content=content),
             metadata=dict(
-                time=dt.datetime.now(self.__time_format).isoformat(),
+                time=str(dt.datetime.timestamp(dt.datetime.now())),
                 type=_NODE,
                 column = column.strip('_'),
                 style = style.strip('_'),
@@ -128,7 +127,7 @@ class LLMLogger:
                     content=relation_content,
                     ),
                 metadata=dict(
-                    time=dt.datetime.now(self.__time_format).isoformat(),
+                    time=str(dt.datetime.timestamp(dt.datetime.now())),
                     type=_EDGE,
                     style=relation_style.strip('_'),
                     ),
@@ -162,7 +161,7 @@ class LLMLogger:
                 title=title,
                 content=content),
             metadata=dict(
-                time=dt.datetime.now(self.__time_format).isoformat(),
+                time=str(dt.datetime.timestamp(dt.datetime.now())),
                 type=_CHAPTER,
                 style = style.strip('_'),
                 ),

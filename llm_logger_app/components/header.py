@@ -10,13 +10,14 @@ def header() -> html.Div:
                     children=["OPTIONS"],
                     n_clicks=0),
             html.Div(className="flex_1"),
-            html.Div("B", 
-                    className="button-generic", 
-                    n_clicks=0),
-            html.Div(className="flex_1"),
             html.Div(id="button-debug", 
                      className="button-generic",
                      children=["DEBUG"],
+                    n_clicks=0),
+            html.Div(className="flex_1"),
+            html.Div(id="button-open-upload", 
+                     className="button-generic",
+                     children=["UPLOAD"],
                     n_clicks=0),
         ]
     )

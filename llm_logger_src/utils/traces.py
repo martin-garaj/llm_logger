@@ -2,6 +2,7 @@ from plotly import graph_objects as go
 from typing import Dict, Any
 import numpy as np
 from shapely.geometry import LineString
+import datetime as dt
 
 if __name__ == "__main__":
     import sys
@@ -193,6 +194,7 @@ def _set_node_datastruct(
             trace_index:int,
             trace_style:str=None,
             data:dict=None, 
+            metadata:dict=None, 
             excerpt_len:int=50,
         ) -> go.Scatter:
     
@@ -201,17 +203,25 @@ def _set_node_datastruct(
             f"trace_index={trace_index} (type={type(trace_index)}), "\
             f"but only type={type(trace_index)} and trace_index>=0 is valid!")
     
-    content = "" if data is None else str(data.get("content", ""))
-    # time = "" if metadata is None else str(metadata.get("time", "time unknown"))
-    # column = "" if metadata is None else str(metadata.get("column", "no label"))
-
-    trace['hoverinfo'] = "name" # text, name, none (no hover)
-    # appears on hover
-    if len(content) > excerpt_len:
-        excerpt = content[0:excerpt_len] + " ..."
-    else:
-        excerpt = content
-    trace["name"] = excerpt.replace('\n', '<br />')
+    trace['hoverinfo'] = "text" # text, name, none (no hover)
+    body = ""
+    
+    if not isinstance(data, type(None)):
+        body = body+f"<b> {'~' * 35} Content {'~' * 35} </b><br />"
+        content=str(data.get("content", ""))
+        if len(content) > excerpt_len:
+            excerpt = content[0:excerpt_len] + " ..."
+        else:
+            excerpt = content
+        body = body + excerpt.replace('\n', '<br />')
+        
+    header=""
+    if not isinstance(metadata, type(None)):
+        header = header+f"<b>logged on</b>: {dt.datetime.fromtimestamp(float(metadata['time']))}"+"<br />"
+        _new_line = '\n'
+        header = header+f"<b>content length</b>: {content.count(_new_line)} [lines]"+"<br />"
+    
+    trace["text"] = header + body
     
     trace = init_customdata(
         trace=trace, 
@@ -266,18 +276,20 @@ def _set_edge_datastruct(
         raise ValueError(
             f"trace_index={trace_index} (type={type(trace_index)}), "\
             f"but only type={type(trace_index)} and trace_index>=0 is valid!") 
-    
-    content = "" if data is None else str(data.get("content", ""))
-    # time = "" if metadata is None else str(metadata.get("time", "time unknown"))
-    # column = "" if metadata is None else str(metadata.get("column", "no label"))
 
-    trace['hoverinfo'] = "name" # text, name, none (no hover)
-    # appears on hover
-    if len(content) > excerpt_len:
-        excerpt = content[0:excerpt_len] + " ..."
-    else:
-        excerpt = content
-    trace["name"] = excerpt.replace('\n', '<br />')
+    trace['hoverinfo'] = "text" # text, name, none (no hover)
+    body = ""
+    
+    if not isinstance(data, type(None)):
+        body = body+f"<b> {'~' * 15} Content {'~' * 15} </b><br />"
+        content=str(data.get("content", ""))
+        if len(content) > excerpt_len:
+            excerpt = content[0:excerpt_len] + " ..."
+        else:
+            excerpt = content
+        body = body + excerpt.replace('\n', '<br />')
+        
+    trace["text"] = body
     
     trace = init_customdata(
         trace, 
@@ -286,6 +298,7 @@ def _set_edge_datastruct(
         trace_style=trace_style,
         content=content,
         )
+
     return trace
 
 

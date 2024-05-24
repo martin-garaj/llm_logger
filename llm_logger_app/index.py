@@ -62,24 +62,28 @@ try:
     from llm_logger_app.components.footer import footer
     from llm_logger_app.components.main import main
     from llm_logger_app.components.aux import aux
+    from llm_logger_app.components.upload import upload
 except ImportError:
     from components.header import header
     from components.options import options
     from components.footer import footer
     from components.main import main
     from components.aux import aux
+    from components.upload import upload
     
 
 app.layout = html.Div(
     id="app",
     className="app",
     children=[
-        options(initial_theme=initial_theme, 
+            header(),
+            main(),
+            footer(),
+            aux(),
+            options(
+                initial_theme=initial_theme, 
                 available_themes=available_themes),
-        header(),
-        main(),
-        footer(),
-        aux(),
+            upload(),
         ],
     **{"data-theme": initial_theme},
 )
@@ -89,8 +93,10 @@ app.layout = html.Div(
 ##                            SERVER-SIDE CALLBACKS                           ##
 ################################################################################
 try:
-    from llm_logger_app.callbacks.serverside.options_open import \
+    from llm_logger_app.callbacks.serverside.options import \
         register_options_open
+    from llm_logger_app.callbacks.serverside.upload import \
+        register_upload_open
     from llm_logger_app.callbacks.serverside.theme_change import \
         register_theme_change
     from llm_logger_app.callbacks.serverside.plotly_figure import \
@@ -102,7 +108,8 @@ try:
     from llm_logger_app.callbacks.serverside.store_report import \
         register_store_report
 except ImportError:
-    from callbacks.serverside.options_open import register_options_open
+    from callbacks.serverside.options import register_options_open
+    from callbacks.serverside.upload import register_upload_open
     from callbacks.serverside.theme_change import register_theme_change
     from callbacks.serverside.plotly_figure import \
         register_render_test_figure, register_update_positions_json
@@ -113,6 +120,7 @@ except ImportError:
     from callbacks.serverside.store_report import register_store_report
 
 register_options_open(app)
+register_upload_open(app)
 register_theme_change(app)
 register_render_test_figure(app)
 register_display_trace_content(app)
