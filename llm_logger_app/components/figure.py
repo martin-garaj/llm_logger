@@ -12,20 +12,37 @@ def figure() -> html.Div:
                              className="fig-blank"),
                     html.Div(id="fig-title",  
                              className="fig-title", 
-                             children=["Chapter title"]),
+                            #  children=["Chapter title"],
+                            children=[
+                                html.Div(id="fig-title-file",
+                                         className="fig-title-file", 
+                                         children=["<filename>"],
+                                ),
+                                html.Div(id="fig-title-chapter",
+                                         className="fig-title-chapter", 
+                                         children=["Chapter title"],
+                                ),
+                            ]
+                             ),
                     html.Div(id="fig-index",  
                              className="fig-index hide-scrollbar", 
                              children=chapters),
                     html.Div(id="fig-plotly", 
                              className="fig-plotly", 
-                             children=[dcc.Graph(
-                                id="fig-graph", 
-                                className="fig-graph", 
-                                config=dict(
-                                    autosizable=False,
-                                    responsive=False,
-                                    ),
-                            )]),
+                             children=[
+                                 html.Div(id="fig-graph", \
+                                     style={"display":"none"},
+                                    )
+                            #      dcc.Graph(
+                            #     id="fig-graph", 
+                            #     className="fig-graph", 
+                            #     config=dict(
+                            #         autosizable=False,
+                            #         responsive=False,
+                            #         ),
+                            # ),
+                                       ],
+                             ),
                         ],
                 )
     

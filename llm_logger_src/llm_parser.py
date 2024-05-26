@@ -268,7 +268,6 @@ class LLMLogParser:
                 raise_error=False,
             )
 
-
     ##------------------------------------------------------------------------##
     ##                                  report                                ##
     ##------------------------------------------------------------------------##
@@ -1242,13 +1241,18 @@ if __name__ == "__main__":
     except ImportError:
         from llm_logger_src.llm_logger import LLMLogger
         
-    logger = LLMLogger(
-        path=pl.Path('./'),
-        file='test_log.json',
-    )
+    logger = LLMLogger()
+    
+    
 
-    parser = LLMLogParser(graph=logger._test(num_nodes=6, num_chapters=2, connectivity=0.9, num_columns=2))
-    # parser.report()
+    graph = nx.read_gml(
+        path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data/test_graph_log.gml')
+
+    graph = logger.load(
+        path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data/test_graph_log.gml')
+
+    parser = LLMLogParser(graph=graph)
+    # parser = LLMLogParser(graph=logger._test(num_nodes=6, num_chapters=2, connectivity=0.9, num_columns=2))
     
     print(parser.chapters)
     
