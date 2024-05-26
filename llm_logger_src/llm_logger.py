@@ -4,6 +4,8 @@ from typing import Any, Literal
 import networkx as nx
 import datetime as dt
 import numpy as np
+import copy
+import io
 
 if __name__ == "__main__":
     import sys
@@ -32,35 +34,42 @@ except ImportError:
 ################################################################################
 class LLMLogger:
     
-    
     def __init__(self,
-        path:pl.Path,
-        file:str,
-        **kwargs:Literal["create_path", "file_rewrite", "time_format"],
+        path:pl.Path=None,
+        filename:str=None,
+        **kwargs:Literal["create_path"],
         ):
         
         # sanity check
-        if not path.resolve().exists() and kwargs.get("create_path", False):
-            raise RuntimeError(
-                f"path='{path.resolve()}', does not exists! use "\
-                f"kwargs['create_path']=True to create folder structure.")
-        
-        # store inputs
-        self.path = path.resolve()
-        self.file = file
-        self.file_rewrite = kwargs.get("file_rewrite", False)
+        if not isinstance(path, type(None)):
+            path = pl.Path(path).resolve()
+            if kwargs.get("create_path", False):
+                os.makedirs(path, exist_ok=True)
+            if not path.exists():
+                raise RuntimeError(
+                    f"path='{str(path)}', does not exist! use "\
+                    f"kwargs['create_path']=True to create folder structure.")
+        else:
+            path = None
+
+        self.path = path
+        self.file = filename
         
         # state variables
-        self.graph = nx.Graph(
-            metadata=dict(time=str(dt.datetime.timestamp(dt.datetime.now()))),
+        self._graph = nx.Graph(
+            metadata=dict(time=str(self._get_timestamp())),
             )
-        self.chapter_counter = 0
-        self.node_counter = 0
+        self.__chapter_counter = 0
+        self.__node_counter = 0
         
-        # # include start chapter by default
-        # self.__start_chapter_included = False
-        # self._start_chapter()
-        
+    ############################################################################
+    ##                               ATTRIBUTES                               ##
+    ############################################################################        
+    
+    @property
+    def graph(self):
+        return copy.deepcopy(self._graph)
+    
     ############################################################################
     ##                                 PUBLIC                                 ##
     ############################################################################
@@ -98,28 +107,28 @@ class LLMLogger:
         column = column.strip('_')
         
         # get new node id
-        self.node_counter = self.node_counter + 1
-        node_id = NodeID(self.node_counter)
+        self.__node_counter = self.__node_counter + 1
+        node_id = NodeID(self.__node_counter)
         
         # add node
-        self.graph.add_node(
+        self._graph.add_node(
             node_for_adding = node_id,
             data=dict(
                 title="",
                 content=content),
             metadata=dict(
-                time=str(dt.datetime.timestamp(dt.datetime.now())),
+                time=str(self._get_timestamp()),
                 type=_NODE,
                 column = column.strip('_'),
                 style = style.strip('_'),
                 stack = stack,
-                chapter_id = ChapterID(self.chapter_counter),
+                chapter_id = ChapterID(self.__chapter_counter),
                 ),
             )
         
         # add edge
         if isinstance(relates_to_node_id, NodeID):
-            self.graph.add_edge(
+            self._graph.add_edge(
                 u_of_edge=node_id,
                 v_of_edge=relates_to_node_id,
                 data=dict(
@@ -127,7 +136,7 @@ class LLMLogger:
                     content=relation_content,
                     ),
                 metadata=dict(
-                    time=str(dt.datetime.timestamp(dt.datetime.now())),
+                    time=str(self._get_timestamp()),
                     type=_EDGE,
                     style=relation_style.strip('_'),
                     ),
@@ -151,17 +160,17 @@ class LLMLogger:
             defaults to None
         """
         # get new node id
-        self.chapter_counter = self.chapter_counter + 1
-        chapter_id = ChapterID(self.chapter_counter)
+        self.__chapter_counter = self.__chapter_counter + 1
+        chapter_id = ChapterID(self.__chapter_counter)
         
         # add node
-        self.graph.add_node(
+        self._graph.add_node(
             node_for_adding = chapter_id,
             data=dict(
                 title=title,
                 content=content),
             metadata=dict(
-                time=str(dt.datetime.timestamp(dt.datetime.now())),
+                time=str(self._get_timestamp()),
                 type=_CHAPTER,
                 style = style.strip('_'),
                 ),
@@ -173,18 +182,138 @@ class LLMLogger:
     ##------------------------------------------------------------------------##
     def report(self):
         chapter_ids_with_node_ids = \
-            get_chapter_ids_with_node_ids(graph=self.graph)
+            get_chapter_ids_with_node_ids(graph=self._graph)
         
         for chapter_id, node_ids in chapter_ids_with_node_ids.items():
             print(f"ChapterID = '{chapter_id}'")
             for node_id in node_ids:
                 print(f"   NodeID = '{node_id}'")
         
+
+    ##------------------------------------------------------------------------##
+    ##                                   save                                 ##
+    ##------------------------------------------------------------------------##
+    def save(self, 
+            path:str=None, 
+            filename:str=None, 
+            format="gml", 
+            **kwargs,
+        ) -> None:
         
+        # parh
+        if isinstance(path, type(None)):
+            if isinstance(self.path, type(None)):
+                raise RuntimeError(
+                    f"'path' parameter is required if not provided when "\
+                    f"LLMLogger is created!")
+            else:
+                path = self.path
+        else:
+            path = pl.Path(path).resolve()
+            if kwargs.get("create_path", False):
+                os.makedirs(path, exist_ok=True)
+            if not path.exists():
+                raise RuntimeError(
+                    f"path='{str(path)}', does not exist! use "\
+                    f"kwargs['create_path']=True to create folder structure.")
+        # filename
+        if isinstance(filename, type(None)):
+            if isinstance(self.filename, type(None)):
+                raise RuntimeError(
+                    f"'filename' parameter is required if not provided when "\
+                    f"LLMLogger is created!")
+            else:
+                filename = self.filename
+        
+        def default_stringizer(value:Any) -> str:
+            import re
+            if isinstance(value, type(None)):
+                return ""
+            if isinstance(value, NodeID):
+                return str(value)
+            if isinstance(value, ChapterID):
+                return str(value)
+            if isinstance(value, list):
+                return str(value)
+            if isinstance(value, str):
+                return value
+            raise ValueError(
+                f"default_stringizer undefined conversion for "\
+                f"type(value)='{type(value)}'!")
+            
+        # save
+        if str(format).lower() == "gml":
+            nx.write_gml(
+                G=self._graph, 
+                path=pl.Path(path, str(filename)+".gml"),
+                stringizer=kwargs.get("stringizer", default_stringizer),
+            )
+        elif str(format).lower() == "dot":
+            nx.write_dot(
+                G=self._graph, 
+                path=pl.Path(path, str(filename)+".dot"),
+            )
+        else:
+            nx.write_gml(
+                G=self._graph, 
+                path=pl.Path(path, str(filename)+".gml"),
+                stringizer=kwargs.get("stringizer", default_stringizer),
+            )
+            raise TypeError(
+                f"Format='{format}', but valid formats=['gml', 'dot']! The graph "\
+                f"was saved as {str(pl.Path(path, str(filename)+'.gml'))} "\
+                f"to prevent data-loss.")
+
+
+    ##------------------------------------------------------------------------##
+    ##                                   load                                 ##
+    ##------------------------------------------------------------------------##
+    def load(self,
+             path_or_buffer:Any,
+             filename:str=None,
+             **kwargs,
+        ) -> nx.Graph: 
+
+        # path or buffer
+        suffix = ""
+        if isinstance(path_or_buffer, io.BytesIO):
+            path = path_or_buffer
+            if not isinstance(filename, type(None)):
+                suffix = str(pl.Path(filename).suffix).replace(".", "").lower()
+        else:
+            path = pl.Path(path_or_buffer)
+            suffix = str(path.suffix).replace(".", "").lower()
+        # default format
+        if suffix == "":
+            suffix = "gml"
+                
+        # read
+        if suffix == "gml":
+            graph = nx.read_gml(
+                path = path,
+                destringizer=kwargs.get("destringizer", None),
+            )
+        elif suffix == "dot":
+            nx.read_dot(
+                path = path,
+            )
+        else:
+            graph = nx.read_gml(
+                path = path,
+                destringizer=kwargs.get("destringizer", None),
+            )
+        
+        return graph
+    
+
     ############################################################################
     ##                                PRIVATE                                 ##
     ############################################################################
-    def _test(self, num_nodes:int=10, num_chapters:int=5, num_columns:int=3, connectivity:float=0.333):
+    def _test(self, 
+            num_nodes:int=10, 
+            num_chapters:int=5, 
+            num_columns:int=3, 
+            connectivity:float=0.333) -> nx.Graph:
         
         with open(__file__, "r") as this_file:
             text = this_file.read()
@@ -241,136 +370,22 @@ class LLMLogger:
                 )
                 node_ids.append(node_id)
                 count_nodes = count_nodes + 1
-        
-        # print(__file__)
-        
-        # self.new_chapter(title = "A")
-        
-        # first_node_id = self.log(
-        #     column="other", 
-        #     style="default", 
-        #     stack=True,
-        #     content="This is content.", 
-        #     relates_to_node_id=None, 
-        #     relation_content=None,
-        # )
-        
-        # last_node_id = self.log(
-        #     column="other", 
-        #     style="default", 
-        #     stack=True,
-        #     content="This is content.", 
-        #     relates_to_node_id=None, 
-        #     relation_content=None,
-        # )
-        
-        # last_node_id = self.log(
-        #     column="other", 
-        #     style="default", 
-        #     stack=True,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=None,
-        # )
-        # self.new_chapter(title = "B")
-        # last_node_id = self.log(
-        #     column="C", 
-        #     style="default", 
-        #     stack=True,
-        #     content="This is content.", 
-        #     relates_to_node_id=None, 
-        #     relation_content=None,
-        # )    
-        
-        # last_node_id = self.log(
-        #     column="A", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
-        # self.new_chapter(title = "C")
-        # last_node_id = self.log(
-        #     column="B", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=first_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
-        
-        # last_node_id = self.log(
-        #     column="A", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
-        
-        # last_node_id = self.log(
-        #     column="A", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
-        
-        # last_node_id = self.log(
-        #     column="A", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
-        
-        # last_node_id = self.log(
-        #     column="C", 
-        #     style="default", 
-        #     stack=False,
-        #     content="This is content.", 
-        #     relates_to_node_id=last_node_id, 
-        #     relation_content=f"Relation to '{last_node_id}'",
-        # )
+    
+        return self._graph
 
-        return self.graph
-        
+    def _get_timestamp(self) -> dt.datetime.timestamp:
+        return dt.datetime.timestamp(dt.datetime.now())
+
 ################################################################################
 ##                                    TESTS                                   ##
 ################################################################################
 if __name__ == "__main__":
     
-    logger = LLMLogger(
-        path=pl.Path('./'),
-        file='test_log.json',
-    )
+    logger = LLMLogger()
     
-    # logger.new_chapter(title = "A")
-    
-    # last_node_id = logger.log(
-    #     column="other", 
-    #     style="default", 
-    #     stack=False,
-    #     content="This is content.", 
-    #     relates_to_node_id=None, 
-    #     relation_content=None,
-    # )
-    
-    # last_node_id = logger.log(
-    #     column="other", 
-    #     style="default", 
-    #     stack=False,
-    #     content="This is content.", 
-    #     relates_to_node_id=last_node_id, 
-    #     relation_content=f"Relation to '{last_node_id}'",
-    # )
-    
-    # logger.report()
-    
-    
-    logger._test(num_nodes=100, num_chapters=10, num_columns=10, connectivity=0.2)
-    
+    logger._test(num_nodes=20, num_chapters=3, num_columns=4, connectivity=0.5)
     logger.report()
+    logger.save(path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data', 
+                filename='test_graph_log', 
+                format='gml',
+                )

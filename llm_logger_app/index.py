@@ -100,7 +100,7 @@ try:
     from llm_logger_app.callbacks.serverside.theme_change import \
         register_theme_change
     from llm_logger_app.callbacks.serverside.plotly_figure import \
-        register_render_test_figure, register_update_positions_json
+        register_render_graph, register_update_positions_json
     from llm_logger_app.callbacks.serverside.display_trace_content import \
         register_display_trace_content
     from llm_logger_app.callbacks.serverside.fig_highlight_traces import \
@@ -112,7 +112,7 @@ except ImportError:
     from callbacks.serverside.upload import register_upload_open
     from callbacks.serverside.theme_change import register_theme_change
     from callbacks.serverside.plotly_figure import \
-        register_render_test_figure, register_update_positions_json
+        register_render_graph, register_update_positions_json
     from callbacks.serverside.display_trace_content import \
         register_display_trace_content
     from callbacks.serverside.fig_highlight_traces import \
@@ -122,7 +122,7 @@ except ImportError:
 register_options_open(app)
 register_upload_open(app)
 register_theme_change(app)
-register_render_test_figure(app)
+register_render_graph(app)
 register_display_trace_content(app)
 register_fig_highlight_traces(app)
 

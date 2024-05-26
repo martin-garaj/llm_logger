@@ -53,11 +53,11 @@
     }
 
     function updateChapterTitle(title) {
-        var titleDiv = document.getElementById('fig-title');
+        var titleDiv = document.getElementById('fig-title-chapter');
         if (titleDiv) {
             titleDiv.textContent = title; // Updates the text content of the div
         } else {
-            console.error('updateChapterTitle() -> No element with id "fig-title" found.');
+            console.error('updateChapterTitle() -> No element with id "fig-title-chapter" found.');
         }
     }
 
