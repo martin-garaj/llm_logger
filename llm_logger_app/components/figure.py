@@ -12,7 +12,6 @@ def figure() -> html.Div:
                              className="fig-blank"),
                     html.Div(id="fig-title",  
                              className="fig-title", 
-                            #  children=["Chapter title"],
                             children=[
                                 html.Div(id="fig-title-file",
                                          className="fig-title-file", 
@@ -32,15 +31,16 @@ def figure() -> html.Div:
                              children=[
                                  html.Div(id="fig-graph", \
                                      style={"display":"none"},
-                                    )
-                            #      dcc.Graph(
-                            #     id="fig-graph", 
-                            #     className="fig-graph", 
-                            #     config=dict(
-                            #         autosizable=False,
-                            #         responsive=False,
-                            #         ),
-                            # ),
+                                    ),
+                                dcc.Graph(
+                                    id="fig-graph", 
+                                    className="fig-graph", 
+                                    config=dict(
+                                        autosizable=False,
+                                        responsive=False,
+                                        ),
+                                    style={"visibility":"hidden"},
+                                ),
                                        ],
                              ),
                         ],

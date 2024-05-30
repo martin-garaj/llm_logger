@@ -1,0 +1,14 @@
+.footer-logo-container {
+    text-align: center;
+    height: auto;
+    max-height: calc(var(--footer-height) - 0.4em );
+    box-sizing: border-box;
+    /* margin: 0.1em; */
+}
+
+.footer-logo {
+    /* max-width: 100%; */
+    height: auto;
+    max-height: calc(var(--footer-height) - 0.4em );
+    box-sizing: border-box;
+}

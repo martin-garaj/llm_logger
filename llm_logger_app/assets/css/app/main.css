@@ -7,6 +7,7 @@ div.main-content {
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 50% 50%;
+    box-sizing: border-box;
 }
 
 
@@ -15,6 +16,7 @@ div.main-left {
     /* position within div.main-content */
     grid-row: 1;
     grid-column: 1;
+    box-sizing: border-box;
 }
 
 
@@ -23,5 +25,6 @@ div.main-right {
     /* position within div.main-content */
     grid-row: 1;
     grid-column: 2;
+    box-sizing: border-box;
 }
 

@@ -1,87 +1,67 @@
-div[data-theme='dark'] .button-generic {
-    border-color: #ffffff;
-    background-color: #000000;
-    color: #ffffff;
-}
-
-div[data-theme='dark'] .button-generic:active {
-    border-color: #ff0000;
-    background-color: #000000;
-    color: #ffffff;
-}
-
-div[data-theme='dark'] .button-theme {
-    border-color: #ffffff;
-    background-color: #001692;
-    color: #ffffff;
+/* ****************************** body & main ******************************* */
+div[data-theme='dark'] .body, 
+div[data-theme='dark'] .main-content, 
+div[data-theme='dark'] .main-left, 
+div[data-theme='dark'] .main-right {
+    background-color: #2c2c2c;
 }
 
 /* ******************************** display ********************************* */
-div[data-theme='dark'] .display-content {
-    border-color:#b4b4b4; 
-    background-color: #424242;
-    color: #ffffff;
+div[data-theme='dark'] .display-content, 
+div[data-theme='dark'] .display {
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac;
+}
+div[data-theme='dark'] .display-line, 
+div[data-theme='dark'] .display-line-text {
+    background-color: #2c2c2c;   color: #acacac;
+}
+div[data-theme='dark'] .display-line-num {
+    background-color: #2c2c2c;   color: #acacac;   border-right: 0.1em solid #acacac;
 }
 
-div[data-theme='dark'] .display {
-    border-color:#b4b4b4; 
-    background-color: #424242;
-    color: #ffffff;
+/* **************************** header & footer ***************************** */
+div[data-theme='dark'] .header, 
+div[data-theme='dark'] .footer {
+    background-color: #2c2c2c;
 }
 
 /* ********************************* figure ********************************* */
-div[data-theme='dark'] .fig-blank {
-    border-color:#b4b4b4; 
-    background-color: #3d3d3d;
-    color: #ffffff;
+div[data-theme='dark'] .fig-content {
+    background-color: #2c2c2c;                       border-color: #acacac; 
 }
 div[data-theme='dark'] .fig-title {
-    border-color:#b4b4b4; 
-    background-color: #3d3d3d;
-    color: #ffffff;
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac; 
 }
-div[data-theme='dark'] .fig-index {
-    border-color:#b4b4b4; 
-    background-color: #424242;
-    color: #ffffff;
+div[data-theme='dark'] .fig-index, 
+div[data-theme='dark'] .fig-plotly, 
+div[data-theme='dark'] .fig-blank {
+                                   color: #acacac;   border-color: #acacac; 
 }
-div[data-theme='dark'] .fig-plotly {
-    border-color:#b4b4b4; 
-    background-color: #424242;
-    color: #ffffff;
-}
-
-
 div[data-theme='dark'] .fig-chapter {
-    border-color:#000000; 
-    background-color: #444343;
-    color: #000000;
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac; 
 }
-div[data-theme='dark'] .fig-chapter-selected {
-    border-color:#e2e2e2; 
-    background-color: #000000;
-    color: #e2e2e2;
+div[data-theme='dark'] .fig-chapter-highlight {
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac; 
 }
 
-
-/* ********************************* header ********************************* */
-div[data-theme='dark'] .header {
-    background-color: #c0c0c0;
-}
-
-/* ********************************* footer ********************************* */
-div[data-theme='dark'] .footer {
-    background-color: #c0c0c0;
-}
-
-
-/* ********************************* options ******************************** */
-div[data-theme='dark'] .options-opened {
-    background-color: #4e4e4ee6;
-}
-
-
-/* ********************************* options ******************************** */
+/* **************************** options & upload **************************** */
+div[data-theme='dark'] .options-opened, 
 div[data-theme='dark'] .upload-opened {
-    background-color: #4e4e4ee6;
+    background-color: #2c2c2ce6;
 }
+div[data-theme='dark'] .options-header, 
+div[data-theme='dark'] .upload-header {
+    background-color: #2c2c2c;
+}
+
+/* ********************************* button ********************************* */
+div[data-theme='dark'] .button-generic {
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac;
+}
+div[data-theme='dark'] .button-generic:active {
+    background-color: #2c2c2c;   color: #acacac;   border-color: #ff0000;
+}
+div[data-theme='dark'] .button-theme {
+    background-color: #2c2c2c;   color: #acacac;   border-color: #acacac;
+}
+
