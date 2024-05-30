@@ -1,12 +1,18 @@
 /* ****************************** main-content ****************************** */
 div.fig-content {
     /* position within div.main-left */
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     /* display of children */
     display: grid;
-    grid-template-rows: var(--fig-index-width) calc(100% - var(--header-height) - var(--footer-height));
-    grid-template-columns: var(--fig-index-width) calc(100% - var(--header-height) - var(--footer-height));
+    grid-template-rows: calc(var(--header-height) + var(--footer-height)) calc(100% - var(--header-height) - var(--footer-height));
+    grid-template-columns: var(--fig-index-width) calc(100% - var(--fig-index-width));
+
+    padding-top:    calc( var(--margin-m) / 2 );
+    padding-right:  calc( var(--margin-m) / 2 );
+    padding-bottom: calc( var(--margin-m) / 2 );
+    padding-left:   var( --margin-m );   
 }
 
 
@@ -15,6 +21,7 @@ div.fig-blank {
     /* position within div.main-content */
     grid-row: 1;
     grid-column: 1;
+    box-sizing: border-box;
 }
 
 /* ******************************** fig-title ******************************* */
@@ -22,8 +29,39 @@ div.fig-title {
     /* position within div.main-content */
     grid-row: 1;
     grid-column: 2;
+    box-sizing: border-box;
+    /* children position */
+    display: block;
+    /* margin-bottom: 1em;  */
+    border-radius: 0.5em 0.5em 0 0;
+    border-top: 0.1em solid;
+    border-left: 0.1em solid; 
+    border-bottom: 0.1em solid;
+    border-right: 0.1em solid; 
 }
 
+div.fig-title-file {
+    /* font */
+    font-family: monospace;
+    font-size: 1.5em;
+    font-style: italic;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    height: 50%;
+    box-sizing: border-box;
+}
+
+div.fig-title-chapter {
+    /* font */
+    font-family: monospace;
+    font-size: 1.5em;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    height: 50%;
+    box-sizing: border-box;
+}
 /* ******************************** fig-index ******************************* */
 div.fig-index {
     /* position within div.main-content */
@@ -45,16 +83,20 @@ div.fig-plotly {
     grid-column: 2;
     overflow-y: scroll;
     height: 100%;
+    box-sizing: border-box;
+    /* margin-bottom: 1em;  */
+    border-radius: 0 0 0.5em 0.5em;
+    border-top: none; 
+    border-left: 0.1em solid; 
+    border-bottom: 0.1em solid; 
+    border-right: 0.1em solid; 
 }
 
 /* ******************************* fig-graph ******************************** */
- /* added to correct small height of the  UI */
 .fig-graph {
-    /* height: calc(100vh - var(--header-height) - var(--footer-height) - var(--fig-title-height)); */
     width: 100%;
-    /* height: 1000%;  */
+    box-sizing: border-box;
 }
-
 
 /* ******************************* fig-chapter ****************************** */
 div.fig-chapter {
@@ -62,7 +104,6 @@ div.fig-chapter {
     height: 3em; 
     min-height: 3em;
     box-sizing: border-box;
-    /* margin-bottom: 1em;  */
     border-radius: 0.5em 0 0 0.5em;
     border: 0.2em solid; 
     /* display of children */
@@ -73,7 +114,6 @@ div.fig-chapter {
     font-size: 1.5em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
-
     /* interaction */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -102,7 +142,6 @@ div.fig-chapter-highlight {
     font-size: 1.5em;
     margin-top: 0.1em;
     margin-bottom: 0.1em;
-
     /* interaction */
     -webkit-touch-callout: none;
     -webkit-user-select: none;

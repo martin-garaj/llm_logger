@@ -3,7 +3,16 @@
     --header-height: 2em;
     --footer-height: 2em;
     --fig-title-height: 4em;
-    --fig-index-width: 4em;
+    --fig-index-width: 2.5em;
     --menu-height: 33vh; /* all menus that appear from the top */
     --min-menu-height: 10em;
+
+    /* margins */
+    --margin-l: 8em;
+    --margin-m: 2em;
+    --margin-s: 0.2em;
+
+    --border-width: 2px;
+    --border-radius: 0.5em;
+
 }

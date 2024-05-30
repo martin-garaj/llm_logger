@@ -23,6 +23,7 @@ def __get_graph_element(parser:LLMLogParser) -> dcc.Graph:
             autosizable=False,
             responsive=False,
         ),
+        style={"visibility":"visible"},
     )
     return graph_element
 

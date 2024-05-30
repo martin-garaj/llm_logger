@@ -12,7 +12,7 @@ NODE_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=12,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
     ),
@@ -20,7 +20,7 @@ NODE_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=12,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
     ),
@@ -40,7 +40,7 @@ CHAPTER_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=16,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
     ),
@@ -48,7 +48,7 @@ CHAPTER_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=16,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
         ),
@@ -56,7 +56,7 @@ CHAPTER_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=16,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
         ),
@@ -64,7 +64,7 @@ CHAPTER_ANNOTATIONS = dict(
             font=dict(
                 family="monospace",
                 size=16,
-                color="white",
+                color="#fafafa",
             ),
             align = "center",
     ),
@@ -77,8 +77,8 @@ CHAPTER_ANNOTATIONS = dict(
 ################################################################################
 LAYOUT_STYLES = dict(
     __default__ = dict(
-            plot_bgcolor='azure',
-            paper_bgcolor='azure',
+            plot_bgcolor="#fafafa",
+            paper_bgcolor="#fafafa",
             autosize=True,  # Disables automatic resizing based on the container
             
             showlegend=False,
@@ -142,7 +142,7 @@ YAXES_STYLES = dict(
 ################################################################################
 COLUMN_STYLES = dict(
     __default__ = dict(
-        fillcolor='gainsboro',
+        fillcolor="#e7e7e7",
         opacity=0.9,
         line_width=0,
         layer="below",

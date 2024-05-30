@@ -1,87 +1,68 @@
-/* ********************************* button ********************************* */
-div[data-theme='light'] .button-generic {
-    border-color: #000000;
-    background-color: #ffffff;
-    color: #000000;
-}
-
-div[data-theme='light'] .button-generic:active {
-    border-color: #ff0000;
-    background-color: #ffffff;
-    color: #000000;
-}
-
-div[data-theme='light'] .button-theme {
-    border-color: #000000;
-    background-color: #fff461;
-    color: #000000;
+/* ****************************** body & main ******************************* */
+div[data-theme='light'] .body, 
+div[data-theme='light'] .main-content, 
+div[data-theme='light'] .main-left, 
+div[data-theme='light'] .main-right {
+    background-color: #fafafa;
 }
 
 /* ******************************** display ********************************* */
-div[data-theme='light'] .display-content {
-    border-color:#000000; 
-    background-color: #e2e2e2;
-    color: #000000;
+div[data-theme='light'] .display-content, 
+div[data-theme='light'] .display {
+    background-color: #fafafa;   color: #2c2c2c;   border-color: #2c2c2c;
+}
+div[data-theme='light'] .display-line, 
+div[data-theme='light'] .display-line-text {
+    background-color: #fafafa;   color: #2c2c2c;
+}
+div[data-theme='light'] .display-line-num {
+    background-color: #fafafa;   color: #2c2c2c;   border-right: 0.1em solid #2c2c2c;
 }
 
-div[data-theme='light'] .display {
-    border-color:#000000; 
-    background-color: #e2e2e2;
-    color: #000000;
+/* **************************** header & footer ***************************** */
+div[data-theme='light'] .header, 
+div[data-theme='light'] .footer {
+    background-color: #e7e7e7;
 }
 
 /* ********************************* figure ********************************* */
-div[data-theme='light'] .fig-blank {
-    border-color:#000000; 
-    background-color: #acacac;
-    color: #000000;
+div[data-theme='light'] .fig-content {
+    background-color: #fafafa;                       border-color: #2c2c2c; 
 }
 div[data-theme='light'] .fig-title {
-    border-color:#000000; 
-    background-color: #acacac;
-    color: #000000;
+    background-color: #acacac;   color: #2c2c2c;   border-color: #2c2c2c; 
 }
-div[data-theme='light'] .fig-index {
-    border-color:#000000; 
-    background-color: #e2e2e2;
-    color: #000000;
-}
-div[data-theme='light'] .fig-plotly {
-    border-color:#000000; 
-    background-color: #e2e2e2;
-    color: #000000;
+
+div[data-theme='light'] .fig-index, 
+div[data-theme='light'] .fig-plotly, 
+div[data-theme='light'] .fig-blank {
+                                   color: #2c2c2c;   border-color: #2c2c2c; 
 }
 div[data-theme='light'] .fig-chapter {
-    border-color:#000000; 
-    background-color: #444343;
-    color: #e2e2e2;
+    background-color: #fafafa;   color: #2c2c2c;   border-color: #2c2c2c; 
 }
-div[data-theme='light'] .fig-chapter-selected {
-    border-color:#000000; 
-    background-color: #e2e2e2;
-    color: #000000;
+div[data-theme='light'] .fig-chapter-highlight {
+    background-color: #acacac;   color: #2c2c2c;   border-color: #2c2c2c; 
 }
 
-
-/* ********************************* header ********************************* */
-div[data-theme='light'] .header {
-    background-color: #3b3b3b;
-}
-
-/* ********************************* footer ********************************* */
-div[data-theme='light'] .footer {
-    background-color: #3b3b3b;
-}
-
-
-/* ********************************* options ******************************** */
-div[data-theme='light'] .options-opened {
-    background-color: #ffffffe6;
-}
-
-/* ********************************* options ******************************** */
+/* **************************** options & upload **************************** */
+div[data-theme='light'] .options-opened, 
 div[data-theme='light'] .upload-opened {
     background-color: #ffffffe6;
 }
+div[data-theme='light'] .options-header, 
+div[data-theme='light'] .upload-header {
+    background-color: #e7e7e7;
+}
 
+/* ********************************* button ********************************* */
+div[data-theme='light'] .button-generic {
+    background-color: #ffffff;   color: #2c2c2c;   border-color: #2c2c2c;
+}
+div[data-theme='light'] .button-generic:active {
+    background-color: #ffffff;   color: #2c2c2c;   border-color: #ff0000;
+}
+div[data-theme='light'] .button-theme {
+    background-color: #ffffff;   color: #2c2c2c;   border-color: #2c2c2c;
+}
 

@@ -385,7 +385,8 @@ if __name__ == "__main__":
     
     logger._test(num_nodes=20, num_chapters=3, num_columns=4, connectivity=0.5)
     logger.report()
-    logger.save(path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data', 
+    logger.save(path='/home/gartin/Documents/Projects/AlphaPrompt/Fairy_tales/Projects/llm_logger/__data', 
                 filename='test_graph_log', 
                 format='gml',
                 )
+    

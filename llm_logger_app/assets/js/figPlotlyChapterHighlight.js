@@ -3,6 +3,15 @@
     let intervalId;
 
     function setupPlotlyScrollListener() {
+        // wait until the chapter locations are loaded, only then the fig-graph is ready
+        try {
+            const positionsJson = document.getElementById('fig-chapter-locations-json').textContent;
+            const positions = JSON.parse(positionsJson);
+        } catch (e) {
+            console.log('setupPlotlyScrollListener() -> Waiting for render_graph server-side callback to properly setup "fig-chapter-locations-json" ...');
+            return 0;
+        }
+
         const figPlotly = document.getElementById('fig-plotly');
 
         if (figPlotly) {
@@ -24,7 +33,7 @@
                 console.error('setupPlotlyScrollListener() -> Error setting up scroll listener:', e);
             }
         } else {
-            console.log('setupPlotlyScrollListener() -> Waiting for fig-plotly container...');
+            console.log('setupPlotlyScrollListener() -> Waiting for fig-graph container...');
         }
     }
 

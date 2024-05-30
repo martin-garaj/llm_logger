@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="509.61276mm"
+   height="82.800171mm"
+   viewBox="0 0 509.61276 82.800171"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="logo_hor_v1.svg"
+   inkscape:export-filename="/home/gartin/Desktop/CloudStorage/Projects/AlphaPrompt/Website/general/logo/logo_v1_high_res.png"
+   inkscape:export-xdpi="100.076"
+   inkscape:export-ydpi="100.076"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="823.07229"
+     inkscape:cy="24.04163"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:snap-global="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid42"
+       originx="192.55452"
+       originy="-34.877039"
+       empspacing="4"
+       dotted="false"
+       units="mm"
+       spacingx="2.5"
+       spacingy="2.5" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(192.55452,-34.877039)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:5.22794;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:5;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2.6045979,37.491017 2.407e-4,77.532543 H 97.427969 L 97.5,37.508236 H 2.6361143"
+       id="path44"
+       sodipodi:nodetypes="ccccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:5.22794;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:5;stroke-dasharray:none;stroke-opacity:1"
+       d="m -189.93778,37.517394 0.0823,77.532546 H 2.5327631 l 0.072,-77.515327 H -189.8242"
+       id="path44-5"
+       sodipodi:nodetypes="ccccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:5.22794;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:5;stroke-dasharray:none;stroke-opacity:1"
+       d="m 97.524439,37.530688 0.0823,77.532552 H 314.36985 l 0.072,-77.515332 H 97.638019"
+       id="path44-5-6"
+       sodipodi:nodetypes="ccccc" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:55.7118px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.3928"
+       x="-220.29202"
+       y="81.211517"
+       id="text5801"
+       transform="scale(0.81293377,1.2301125)"><tspan
+         sodipodi:role="line"
+         id="tspan5799"
+         style="font-weight:bold;stroke-width:1.3928"
+         x="-220.29202"
+         y="81.211517">ALPHA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:51.7962px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.29491"
+       x="137.01891"
+       y="80.785454"
+       id="text5801-9"
+       transform="scale(0.78503663,1.2738259)"><tspan
+         sodipodi:role="line"
+         id="tspan5799-7"
+         style="font-weight:bold;stroke-width:1.29491"
+         x="137.01891"
+         y="80.785454">PROMPT</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:7.5;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 70,40 c 0.03651,20.040207 -19.999999,70 -42.5,70 -10,0 -20,-5 -20,-17.5 0,-12.499999 8.134527,-17.675709 20,-17.5 25,0 17.5,35 40,35 C 85,110 95,80 95,80"
+       id="path14680"
+       sodipodi:nodetypes="cccccc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 95.199598,67.869819 92.056129,77.420881 95,77.5 95.71724,68.68454"
+       id="path18728"
+       sodipodi:nodetypes="cccc" />
+  </g>
+</svg>
