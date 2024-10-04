@@ -1,5 +1,5 @@
 """
-export PYTHONPATH="${PYTHONPATH}:/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/llm_logger/llm_logger"
+export PYTHONPATH="${PYTHONPATH}:<path>/llm_logger"
 
 lsof -i :8050
 kill -9 <PID>

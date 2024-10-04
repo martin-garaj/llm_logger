@@ -1246,10 +1246,10 @@ if __name__ == "__main__":
     
 
     graph = nx.read_gml(
-        path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data/test_graph_log.gml')
+        path='./__data/test_graph_log.gml')
 
     graph = logger.load(
-        path='/home/gartin/Documents/AlphaPrompt/Fairy_tales/Projects/__data/test_graph_log.gml')
+        path='./__data/test_graph_log.gml')
 
     parser = LLMLogParser(graph=graph)
     # parser = LLMLogParser(graph=logger._test(num_nodes=6, num_chapters=2, connectivity=0.9, num_columns=2))
