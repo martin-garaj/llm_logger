@@ -12,9 +12,6 @@ LLM systems (especially agentic systems) can create hard-to-track conversations 
 
 2) **visualizer** interprets the graph and interactively displays the logged data in a browser.
 
-
-The vertical format with partitioned messages into columns allows for efficient visual checks. The user is not overwhelmed by large amount of text (like in regular .log files) and can visually check whether communication occured (link crossing in between LLM agents) or not (no link) in a blink of an eye. If further investigation is required, the right side of the application is reserved for displating the full context of the message with responsive line numbers (e.g. similar to VS Code) to keep easy track of the information occuring at the same visual-spatial place, further easing the analysis.
-
 # Content
 
 LLM logger is composed of 2 parts:
