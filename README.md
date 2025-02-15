@@ -1,16 +1,23 @@
 # LLM-logger
 
-LLM logger is a logger & visualisation tool for LLM though process such as Chain-of-though, Tree-of-thought, etc.
+LLM logger is a logger & visualisation tool for LLM-based systems and processes such as Chain-of-though, Tree-of-thought, Multi-Agent Systems, Retrieval Augmented Generation (RAG), etc.
 
-LLM logger tracks the messages among LLM agents and preserves them within a graph-like structure. This assures that not only content of the messages is preserved, but also the sender-receiver with accompanying info about the sender-receiver relation.
+# Problem that this tool solves
 
-The messages are naturally logged at particular time, creating a *conversation flow* with beginning and an end. This enables to visually represent the graph vertically (beginning at the top, end at the bottom). The messages are displayed in columns, where a column represents one (or more) LLM agents. 
+LLM systems (especially agentic systems) can create hard-to-track conversations with hundreds or throusands of entries. If the messages are logged into a text file, it might not be possible to detect deviations in the conversation flow. **LLM-logger** helps to visualize the conversation flow (e.g. among agents, or within a RAG system) as a scrollable-graph that naturally displays the conversation in chronological order.
+
+**LLM-logger** is split into 2 tools/sub-packages:
+
+1) **logger** tracks messages passed within the system with one or more LLMs and preserves them within a graph-like structure. This graph-structure keeps the sender-receiver information and the content of the passed message in chronological order.
+
+2) **visualizer** interprets the graph and interactively displays the logged data in a browser.
+
 
 The vertical format with partitioned messages into columns allows for efficient visual checks. The user is not overwhelmed by large amount of text (like in regular .log files) and can visually check whether communication occured (link crossing in between LLM agents) or not (no link) in a blink of an eye. If further investigation is required, the right side of the application is reserved for displating the full context of the message with responsive line numbers (e.g. similar to VS Code) to keep easy track of the information occuring at the same visual-spatial place, further easing the analysis.
 
 # Content
 
-LLM logger composes of 2 parts:
+LLM logger is composed of 2 parts:
 
 1) llm_logger_src - source code of the logger tracking multi agent commincation & storing it in a graph-like structure
 2) llm_logger_app - user-interface for interactive display of the graph-like logged structures
